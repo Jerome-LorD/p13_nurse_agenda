@@ -1,0 +1,17 @@
+*.py[cod]
+env
+.vscode
+.env
+**/node_modules
+**/scss/
+.editorconfig
+scripts/
+index.html
+*.html
+staticfiles/
+package-lock.json
+package.json
+**/js/demo/
+.html
+.git
+PRO_UPGRADE.txt
