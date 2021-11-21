@@ -52,6 +52,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "nursapps.agenda",
+    "nursapps.nursauth",
 ]
 
 MIDDLEWARE = [
@@ -151,7 +153,7 @@ STATIC_URL = "/static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Custom user
-AUTH_USER_MODEL = "purauth.User"
+AUTH_USER_MODEL = "nursauth.User"
 
 # Redirect to profile URL after login (Default redirects to /accounts/profile/)
 LOGIN_REDIRECT_URL = "registration/profile.html"

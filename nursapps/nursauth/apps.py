@@ -2,5 +2,5 @@ from django.apps import AppConfig
 
 
 class NursauthConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'nursauth'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "nursapps.nursauth"
