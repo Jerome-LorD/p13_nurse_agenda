@@ -15,3 +15,4 @@ package.json
 .html
 .git
 PRO_UPGRADE.txt
+db.sqlite3
