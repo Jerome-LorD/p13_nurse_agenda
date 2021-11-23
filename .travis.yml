@@ -25,3 +25,8 @@ env: DJANGO_SETTINGS_MODULE="app.settings"
 # command to run tests
 script:
   - python manage.py test
+
+deploy:
+  provider: heroku
+  api_key:
+    secure: "YOUR ENCRYPTED API KEY"
