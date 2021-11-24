@@ -40,7 +40,11 @@ if os.environ.get("ENV") == "PRODUCTION":
 else:
     DEBUG = True
 
-ALLOWED_HOSTS = []
+# Dev mode
+# ALLOWED_HOSTS = []
+
+# Prod mode
+ALLOWED_HOSTS = ["jlord-nursag-p13.herokuapp.com/"]
 
 
 # Application definition
