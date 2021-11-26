@@ -1,21 +1,29 @@
 language: python
+
 python:
-- '3.9'
+  - '3.9'
+
 branches:
   only:
-  - develop
+    - develop
+
 before_install:
-- wget https://github.com/mozilla/geckodriver/releases/download/v0.21.0/geckodriver-v0.21.0-linux64.tar.gz
-- mkdir geckodriver
-- tar -xzf geckodriver-v0.21.0-linux64.tar.gz -C geckodriver
-- export PATH=$PATH:$PWD/geckodriver
+  - wget https://github.com/mozilla/geckodriver/releases/download/v0.21.0/geckodriver-v0.21.0-linux64.tar.gz
+  - mkdir geckodriver
+  - tar -xzf geckodriver-v0.21.0-linux64.tar.gz -C geckodriver
+  - export PATH=$PATH:$PWD/geckodriver
+
 before_script:
-- python manage.py collectstatic
+  - python manage.py collectstatic --noinput  -i node_modules -i vendor -i scss -i scripts
+
 services:
-- postgresql
+  - postgresql
+
 env: DJANGO_SETTINGS_MODULE="app.settings"
+
 script:
-- python manage.py test
+  - python manage.py test
+
 deploy:
   provider: heroku
   api_key:
