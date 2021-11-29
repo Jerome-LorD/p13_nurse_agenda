@@ -1,0 +1,117 @@
+{% extends "pages/base.html" %}
+{% load static %}
+{% block title %}Mon compte -- Pur beurre{% endblock title %}
+{% comment %} {% block navbar %}{% endblock navbar %}  {% endcomment %}
+<script>
+    const autocomp_source = "{% url 'autocomplete' %}";
+</script>
+
+{% block profile %}
+        <div class="row justify-content-center">
+            <div class="col-xl-10 col-lg-12 col-md-9">
+                <div class="card o-hidden border-0 shadow-lg my-5">
+                    <div class="card-body p-0">
+                        <!-- Nested Row within Card Body -->
+                        <div class="row">
+                            <div class="col-lg-6 d-none d-lg-block bg-login-image"></div>
+                            <div class="col-lg-6">
+                                <div class="p-5">
+                                    <h3>Mon compte : 
+                                        {% if request.user.is_authenticated %}
+                                            {{ user.username|capfirst }}
+                                    </h3>
+                                        {% else %}
+                                        <a href="{% url 'login' %}">Login</a>
+                                        {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% if not request.user.is_cabinet_owner and not reqass and not request.user in associates %}
+                    Création d'un cabinet :<br>Saisissez le nom de votre cabinet, s'il apparait dans l'autocomplete c'est qu'il existe déjà et vous 
+                    devez faire une demande à son propriétaire.<br>Sinon, vous pouvez le créer.
+
+                    <form method="post" action="{% url 'create' %}"> <!-- -->
+                        {% csrf_token %}
+                        {{ cab_form.as_ul }}<br><br><br>
+                        <input type="submit" value="Submit">
+                    </form>
+
+<script src="{% static 'js/autocomplete.js' %}"></script>
+
+                {% elif not request.user.is_cabinet_owner and reqass %}
+                La demande vient d'être envoyée, vous serez averti par email quand elle sera acceptée.<br>
+                /!\ La demande est envoyée depuis [date et heure]
+
+                {% elif request.user.is_cabinet_owner and cabinet %}
+                    <h3>Votre cabinet : {{cabinet.name.capitalize}}</h3>
+                    Vous seul avez la propriété de ce cabinet pour le moment 1.
+                    Pour ajouter un associé, vous recevrez une demande de sa part dans cet espace (vous serez averti par email).
+                    Après validation de la demande par vos soins, tous les associés recevront les demandes et devront valider une nouvelle association.
+
+                    <!-- Cabinet creation confirmed -->
+
+                    <h3>Confirmation de la création du cabinet : {{cabinet.name.capitalize}}</h3>
+                    <p>Vous seul avez la propriété de ce cabinet pour le moment.</p>
+                    <p>Pour ajouter un associé, vous recevrez une demande de sa part dans cet espace (vous serez averti par email).</p>
+                    <p>Après validation de la demande par vos soins, vos associés recevront les demandes et devront valider une nouvelle association. 
+                    <br>Vous pouvez choisir d'attribuer un statut "invité" ou "associé".</p>
+
+
+                {% elif associates %}
+                nombre d'accociés : {{associates|length}}
+                {% comment %} {% if associates %} pourtant ...<br>{% endif %} {% endcomment %}
+
+
+                    <table class="table table-striped table-dark">
+                        <thead>
+                            <tr>
+                                <th style="text-align:center" colspan="2">Associés du cabinet {{ cab_name|capfirst }}</th>
+                            </tr>
+                            <tr>
+                                <th>Nom d'utilisateur</th>
+                                <th>Email</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for associate in associates %}                       
+                            <tr>
+                                <td>{{associate.username}}</td><td>{{associate.email}}</td><td>{% with status=associate.is_cabinet_owner  %}{% if status == True %} associé {% else %} remplacant {% endif %} {% endwith %}</td>
+                            </tr>     
+                            {% endfor %}                                                   
+                        </tbody>
+                    </table>
+                    
+                    {% if sender %}
+                        {% for i in sender %}
+
+                        <p>Une demande d'association de la part de <b>{{i.email}}</b> attend une action de votre part :</p>
+                        <form action="{% url 'confirm_associate' %}" method="post">
+                            {% csrf_token %}
+                        <input type="hidden"
+                            name="{{ valid_form.confirm.name }}"
+                            id="{{ valid_form.confirm.id_for_label }}"
+                            {% if valid_form.confirm.value is None %}value="{{ i.id }}"{% endif %}
+                            maxlength="{{ valid_form.confirm.field.max_length }}"
+                            {% if valid_form.confirm.field.required %}required{% endif %}>
+                            {{valid_form.choice}}
+                        <input type="submit" value="Accepter la demande">    
+                        </form><br>
+
+
+                        {% endfor %}
+
+                    {% comment %} {% else %}
+                    La demande est acceptée !!! {% endcomment %}
+                    {% endif %}
+
+                {% endif %}
+            </div>
+        </div>
+    
+{% endblock %}
+
+
