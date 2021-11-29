@@ -1,6 +1,6 @@
 {% extends "pages/base.html" %}
 {% load static %}
-{% block title %}Mon compte -- Pur beurre{% endblock title %}
+{% block title %}Mon compte{% endblock title %}
 {% comment %} {% block navbar %}{% endblock navbar %}  {% endcomment %}
 <script>
     const autocomp_source = "{% url 'autocomplete' %}";
@@ -39,20 +39,18 @@
                         <input type="submit" value="Submit">
                     </form>
 
-<script src="{% static 'js/autocomplete.js' %}"></script>
+                <script src="{% static 'js/autocomplete.js' %}"></script>
 
                 {% elif not request.user.is_cabinet_owner and reqass %}
                 La demande vient d'être envoyée, vous serez averti par email quand elle sera acceptée.<br>
-                /!\ La demande est envoyée depuis [date et heure]
+                <!-- /!\ La demande est envoyée depuis [date et heure] -->
 
                 {% elif request.user.is_cabinet_owner and cabinet %}
                     <h3>Votre cabinet : {{cabinet.name.capitalize}}</h3>
                     Vous seul avez la propriété de ce cabinet pour le moment 1.
                     Pour ajouter un associé, vous recevrez une demande de sa part dans cet espace (vous serez averti par email).
                     Après validation de la demande par vos soins, tous les associés recevront les demandes et devront valider une nouvelle association.
-
                     <!-- Cabinet creation confirmed -->
-
                     <h3>Confirmation de la création du cabinet : {{cabinet.name.capitalize}}</h3>
                     <p>Vous seul avez la propriété de ce cabinet pour le moment.</p>
                     <p>Pour ajouter un associé, vous recevrez une demande de sa part dans cet espace (vous serez averti par email).</p>
@@ -62,9 +60,6 @@
 
                 {% elif associates %}
                 nombre d'accociés : {{associates|length}}
-                {% comment %} {% if associates %} pourtant ...<br>{% endif %} {% endcomment %}
-
-
                     <table class="table table-striped table-dark">
                         <thead>
                             <tr>
@@ -101,13 +96,8 @@
                         <input type="submit" value="Accepter la demande">    
                         </form><br>
 
-
                         {% endfor %}
-
-                    {% comment %} {% else %}
-                    La demande est acceptée !!! {% endcomment %}
                     {% endif %}
-
                 {% endif %}
             </div>
         </div>
