@@ -1,8 +1,8 @@
 language: python
+
 python:
   - '3.9'
 
-# safelist
 branches:
   only:
     - develop
@@ -13,15 +13,18 @@ before_install:
   - tar -xzf geckodriver-v0.21.0-linux64.tar.gz -C geckodriver
   - export PATH=$PATH:$PWD/geckodriver
 
-# command to install dependencies
 before_script:
-  - python manage.py collectstatic
+  - python manage.py collectstatic --noinput  -i node_modules -i vendor -i scss -i scripts
 
 services:
   - postgresql
 
 env: DJANGO_SETTINGS_MODULE="app.settings"
 
-# command to run tests
 script:
   - python manage.py test
+
+deploy:
+  provider: heroku
+  api_key:
+    secure: Hdst7VePUHJg+OOctiewpJhheFZfcwARr4W6uK5xBZXmUTxW2LlrbnEXW7+eQFRHo6tQ2v5kNDxsD2Ov44mV37uVnS1zOV+5oZW08rdhhkjh+Il2Grlrg44/l9AZ4gdTYPDPycdInDzm95rhlArUvyJybwaOe6j8aYT3tJqWVYQ22dvMbkFRxg0coK6iPCadYxpgAuSnk6FFiT0SdZs7FqdxO7qr68ot+PhS6s21m8VC+q1K56YcrDPPsqpdJ35+j5pTvUVgepg17+ZVNZ1jQMFq944pGjjygFLjaau5TPBU9ct+D9tTK0X/TG6eIfXWwfbjs7b+yFrVtCVe+5rCSDlzYu1ljmuuk1REITF1/BbIrNW8owuMg7wcfK+Q/UDTgZuiwzHsrKyuHDZWp0Xl0FSLncW10FEzlJAT17+RMfWZr25dpMSlo6opMXBuwBg3zUsaSXQeN7rE0gBUWMAjsw7lzocyXg4rs4c8eaT3s+/iQPODixFMutZBlZn2TyfinwJ+XKX3URuM8qRvNzoM1+eRabdmATHxTIf3Y9VbOEXWjHI4ANLSQGePhqaA4+9xMlkw0UtRalZVqGgPhWrk6hscB8CBhReoTo7SrT1PzEucpZpv1A78xB6M1C9m1SiT/pUvKtUL8dcAhEMFXJ2qRiIu+QO9ZkEQGXYKjxaBITI=
