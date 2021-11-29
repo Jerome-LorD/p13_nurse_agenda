@@ -22,6 +22,7 @@ class Cabinet(models.Model):
     name = models.CharField(max_length=240, unique=True, default=False, blank=True)
 
     def __str__(self):
+        """"""
         return self.name
 
     class Meta:
@@ -39,6 +40,8 @@ class AssociateManager(models.Manager):
 
 
 class Associate(models.Model):
+    """Store users with their own cabinet."""
+
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     cabinet = models.ForeignKey(Cabinet, on_delete=models.CASCADE)
 
@@ -50,12 +53,16 @@ class Associate(models.Model):
 
 
 class RequestAssociate(models.Model):
+    """Temporarily saves the association's request until this request is accepted."""
+
     sender_id = models.CharField(max_length=10, default=False, blank=True)
     receiver_id = models.CharField(max_length=10, default=False, blank=True)
     cabinet_id = models.CharField(max_length=10, default=False, blank=True)
 
 
 class Patient(models.Model):
+    """Store the list of appointments."""
+
     cabinet = models.ForeignKey(Cabinet, on_delete=models.CASCADE)
     sex = models.CharField(max_length=1, default=False, blank=True)
     firstname = models.CharField(max_length=240, default=False, blank=True)
