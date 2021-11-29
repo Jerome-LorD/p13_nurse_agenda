@@ -14,6 +14,7 @@ before_install:
   - export PATH=$PATH:$PWD/geckodriver
 
 before_script:
+  - psql -c "CREATE USER agendaz WITH PASSWORD 'secret123';" -U postgres
   - python manage.py collectstatic --noinput  -i node_modules -i vendor -i scss -i scripts
 
 services:
