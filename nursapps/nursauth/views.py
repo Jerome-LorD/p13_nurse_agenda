@@ -9,10 +9,11 @@ from .forms import (
     InscriptForm,
     NewLoginForm,
 )
-from nursapps.cabinet.forms import (
-    CreateCabinet,
-    AssociationValidation,
-)
+
+# from nursapps.cabinet.forms import (
+#     CreateCabinet,
+#     AssociationValidation,
+# )
 
 
 def inscript(request):

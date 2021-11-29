@@ -1,7 +1,8 @@
 """Tests nursauth module."""
 from django.contrib.auth import get_user_model
 from django.test import TestCase, Client
-from nursapps.nursauth.forms import NewLoginForm
+
+# from nursapps.nursauth.forms import NewLoginForm
 
 
 class TestUserRegistration(TestCase):
