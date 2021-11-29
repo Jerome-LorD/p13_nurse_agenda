@@ -13,8 +13,8 @@ before_install:
   - tar -xzf geckodriver-v0.21.0-linux64.tar.gz -C geckodriver
   - export PATH=$PATH:$PWD/geckodriver
 
-before_script:
-  - python manage.py collectstatic # --noinput  -i node_modules -i vendor -i scss -i scripts
+# before_script:
+#   - python manage.py collectstatic --noinput  -i node_modules -i vendor -i scss -i scripts
 
 services:
   - postgresql
