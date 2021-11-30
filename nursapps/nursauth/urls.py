@@ -1,5 +1,5 @@
 """Nursauth urls module."""
-from django.urls import path, re_path
+from django.urls import path
 from nursapps.nursauth import views
 from django.contrib.auth import views as auth_views
 

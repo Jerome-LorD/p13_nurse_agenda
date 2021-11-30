@@ -40,7 +40,11 @@ if os.environ.get("ENV") == "PRODUCTION":
 else:
     DEBUG = True
 
+# Dev mode
 ALLOWED_HOSTS = []
+
+# Prod mode
+# ALLOWED_HOSTS = ["jlord-nursag-p13.herokuapp.com"]
 
 
 # Application definition
@@ -58,6 +62,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -146,6 +151,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = "/static/"
+
+# Simplified static file serving.
+# https://warehouse.python.org/project/whitenoise/
+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")  # prod
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 
