@@ -2,7 +2,8 @@
 from django import forms
 from django.contrib.auth import forms as auth_forms
 from django.contrib.auth import get_user_model
-from nursapps.agenda.models import Cabinet
+
+# from nursapps.agenda.models import Cabinet
 
 
 class UserCreationForm(auth_forms.UserCreationForm):
@@ -93,69 +94,3 @@ class NewLoginForm(auth_forms.UserCreationForm):
 
         model = get_user_model()
         fields = ("email", "password")
-
-
-class NewCabForm(forms.Form):
-    """New cabinet form."""
-
-    cabinet = forms.CharField(
-        max_length=240,
-        widget=forms.TextInput(
-            attrs={
-                "class": "form-control form-control-user",
-                "placeholder": "Votre nouveau cabinet",
-            }
-        ),
-    )
-
-    class Meta:
-        """NewCabForm meta class."""
-
-        model = Cabinet
-        fields = "cabinet"
-
-
-class NewAskForm(forms.Form):
-    """New ask form."""
-
-    askfor = forms.CharField(
-        max_length=140,
-        widget=forms.TextInput(
-            attrs={
-                "class": "form-control col-md-2",
-                "placeholder": "nom du cabinet",
-            }
-        ),
-    )
-
-    class Meta:
-        """NewAskForm meta class."""
-
-        model = Cabinet
-        fields = "askfor"
-
-
-class NewValidForm(forms.Form):
-    """New valid form."""
-
-    confirm = forms.CharField(
-        label="",
-        max_length=10,
-        widget=forms.HiddenInput(
-            attrs={
-                "class": "form-control me-2",
-                "id": "confirm",
-            }
-        ),
-    )
-
-    def clean(self):
-        confirm = self.cleaned_data["confirm"]
-        if not confirm:
-            raise forms.ValidationError("Il faut confirmer pour valider.")
-
-    class Meta:
-        """NewAskForm meta class."""
-
-        model = Cabinet
-        fields = "confirm"

@@ -1,0 +1,44 @@
+{% extends "pages/base.html" %}
+{% load static %}
+{% block title %}Mon compte -- Pur beurre{% endblock title %}
+
+{% block profile %}
+<div class="row justify-content-center">
+    <div class="col-xl-10 col-lg-12 col-md-9">
+        <div class="card o-hidden border-0 shadow-lg my-5">
+            <div class="card-body p-0">
+                <!-- Nested Row within Card Body -->
+                <div class="row">
+                    <div class="col-lg-6 d-none d-lg-block bg-login-image"></div>
+                    <div class="col-lg-6">
+                        <div class="p-5">
+                            <h3>Mon compte : 
+                            {% if request.user.is_authenticated %}
+                            {{ user.username|capfirst }}
+                            </h3>
+
+                            {% else %}
+                            <a href="{% url 'login' %}">Login</a>
+                            {% endif %}
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <p> {% lorem 1 b random %} </p>
+        Le cabinet <b>{{cabinet.name}}</b> est déjà enregistré, 
+        <ul>
+            <li>vous pouvez le sélectionner et faire la demande d'association de votre compte à son propriétaire.</li>
+
+            <form method="post" class="user" action="{% url 'askfor' %}">
+                {% csrf_token %}
+                {{ ask_form.as_ul }}
+                <input type="submit" class="btn btn-primary col-md-2" value="Envoyer la demande">
+            </form>    
+
+            <li>Vous pouvez créer un autre cabinet. Retour sur profile -> L'intitulé de ce cabinet doit être unique (ne pas être déjà enregistré).</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

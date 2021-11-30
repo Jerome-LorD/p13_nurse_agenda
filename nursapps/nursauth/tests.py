@@ -2,14 +2,12 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase, Client
 
-# from nursapps.nursauth.forms import NewLoginForm
-
 
 class TestUserRegistration(TestCase):
     """Test user registration."""
 
     def setUp(self):
-        """SetUp."""
+        """Set up."""
         self.User = get_user_model()
         self.client = Client()
         self.inscript_credentials = {
@@ -21,7 +19,7 @@ class TestUserRegistration(TestCase):
         self.login_credentials = {"email": "john@doe.com", "password": "poufpouf"}
 
     def test_user_registration(self):
-        """test form data.
+        """Test form data.
 
         The view needs at least:
         - an email
