@@ -29,6 +29,5 @@ deploy:
   provider: heroku
   api_key:
     secure: $API_KEY
-    app: $APP_NAME
     on:
-      branch: main
+      all_branches: true
