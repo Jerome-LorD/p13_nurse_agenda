@@ -41,10 +41,10 @@ else:
     DEBUG = True
 
 # Dev mode
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = []
 
 # Prod mode
-# ALLOWED_HOSTS = ["jlord-nursag-p13.herokuapp.com"]
+ALLOWED_HOSTS = ["jlord-nursag-p13.herokuapp.com"]
 
 
 # Application definition
