@@ -23,6 +23,7 @@ DB_NAME = os.getenv("DB_NAME")
 DB_PASSWD = os.getenv("DB_PASSWD")
 DB_USER = os.getenv("DB_USER")
 HOST = os.getenv("HEROKU_HOST")
+DJANGO_SECRET_KEY = os.getenv("SECRET_KEY")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -32,7 +33,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-397%e+$*49v2nkbs+=zlh2=_5=6aqb8ub+u8eybigo&^7y^ab7"
+SECRET_KEY = DJANGO_SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
 if os.environ.get("ENV") == "PRODUCTION":
@@ -101,7 +102,7 @@ DATABASES = {
         "NAME": DB_NAME,
         "USER": DB_USER,
         "PASSWORD": DB_PASSWD,
-        "HOST": "localhost",
+        "HOST": HOST,
         "PORT": "5432",
         "DISABLE_SERVER_SIDE_CURSORS": True,
         "TEST": {
