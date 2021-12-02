@@ -99,6 +99,17 @@ WSGI_APPLICATION = "app.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "TEST": {
+            "NAME": "agenda_test_database",
+        },
+        "OPTIONS": {
+            "isolation_level": psycopg2.extensions.ISOLATION_LEVEL_SERIALIZABLE,
+        },
+    }
+}
 
 DATABASES = {"default": dj_database_url.config(conn_max_age=600, ssl_require=True)}
 
