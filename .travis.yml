@@ -27,5 +27,3 @@ deploy:
   strategy: git
   api_key:
     secure: $API_KEY
-    on:
-      branch: main
