@@ -11,11 +11,9 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 import os
 import psycopg2.extensions
-import dj_database_url
 import django_heroku
 
 from pathlib import Path
-
 from dotenv import load_dotenv, find_dotenv  # type: ignore
 
 load_dotenv(find_dotenv())
