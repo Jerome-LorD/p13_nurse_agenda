@@ -26,7 +26,7 @@ DB_PASSWD = os.getenv("DB_PASSWD")
 DB_USER = os.getenv("DB_USER")
 HOST = os.getenv("HEROKU_HOST")
 DJANGO_SECRET_KEY = os.getenv("SECRET_KEY")
-DATABASE_URL = os.getenv["DATABASE_URL"]
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -101,23 +101,23 @@ WSGI_APPLICATION = "app.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "TEST": {
-            "NAME": "agenda_test_database",
-        },
-        "OPTIONS": {
-            "isolation_level": psycopg2.extensions.ISOLATION_LEVEL_SERIALIZABLE,
-        },
+if os.environ.get("ENV") != "PRODUCTION":
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": DB_NAME,
+            "USER": DB_USER,
+            "PASSWORD": DB_PASSWD,
+            "TEST": {
+                "NAME": "agenda_test_database",
+            },
+            "OPTIONS": {
+                "isolation_level": psycopg2.extensions.ISOLATION_LEVEL_SERIALIZABLE,
+            },
+        }
     }
-}
-
-DATABASES = {
-    "default": dj_database_url.config(
-        default=DATABASE_URL, conn_max_age=600, ssl_require=True
-    )
-}
+else:
+    DATABASES = {"default": dj_database_url.config(default=DATABASE_URL)}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
