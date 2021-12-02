@@ -7,7 +7,7 @@ env
 .editorconfig
 scripts/
 index.html
-*.html
+static/*.html
 staticfiles/
 package-lock.json
 package.json
