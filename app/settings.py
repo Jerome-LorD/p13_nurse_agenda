@@ -26,7 +26,7 @@ DB_PASSWD = os.getenv("DB_PASSWD")
 DB_USER = os.getenv("DB_USER")
 HOST = os.getenv("HEROKU_HOST")
 DJANGO_SECRET_KEY = os.getenv("SECRET_KEY")
-DATABASE_URL = os.environ["DATABASE_URL"]
+DATABASE_URL = os.getenv["DATABASE_URL"]
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
