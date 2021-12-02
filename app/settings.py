@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 import os
 import psycopg2.extensions
+import dj_database_url
 
 from pathlib import Path
 
@@ -99,24 +100,7 @@ WSGI_APPLICATION = "app.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": DB_NAME,
-        "USER": DB_USER,
-        "PASSWORD": DB_PASSWD,
-        "HOST": HOST,
-        "PORT": "5432",
-        "DISABLE_SERVER_SIDE_CURSORS": True,
-        "TEST": {
-            "NAME": "agenda_test_database",
-        },
-        "OPTIONS": {
-            "isolation_level": psycopg2.extensions.ISOLATION_LEVEL_SERIALIZABLE,
-        },
-    }
-}
-
+DATABASES = {"default": dj_database_url.config(conn_max_age=600, ssl_require=True)}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -175,3 +159,9 @@ AUTH_USER_MODEL = "nursauth.User"
 LOGIN_REDIRECT_URL = "registration/profile.html"
 
 LOGIN_URL = "/auth/accounts/login"
+
+
+# Configure Django App for Heroku.
+import django_heroku
+
+django_heroku.settings(locals())
