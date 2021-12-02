@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 import os
 import psycopg2.extensions
 import dj_database_url
+import django_heroku
 
 from pathlib import Path
 
@@ -25,6 +26,7 @@ DB_PASSWD = os.getenv("DB_PASSWD")
 DB_USER = os.getenv("DB_USER")
 HOST = os.getenv("HEROKU_HOST")
 DJANGO_SECRET_KEY = os.getenv("SECRET_KEY")
+DATABASE_URL = os.environ["DATABASE_URL"]
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -111,7 +113,11 @@ DATABASES = {
     }
 }
 
-DATABASES = {"default": dj_database_url.config(conn_max_age=600, ssl_require=True)}
+DATABASES = {
+    "default": dj_database_url.config(
+        default=DATABASE_URL, conn_max_age=600, ssl_require=True
+    )
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -170,9 +176,5 @@ AUTH_USER_MODEL = "nursauth.User"
 LOGIN_REDIRECT_URL = "registration/profile.html"
 
 LOGIN_URL = "/auth/accounts/login"
-
-
-# Configure Django App for Heroku.
-import django_heroku
 
 django_heroku.settings(locals())
