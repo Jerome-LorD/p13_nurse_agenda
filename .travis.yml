@@ -26,5 +26,3 @@ deploy:
   provider: heroku
   strategy: git
   api_key: $API_KEY
-  on:
-    branch: main
