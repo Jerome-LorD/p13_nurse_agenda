@@ -15,8 +15,6 @@ import django_heroku
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 
-sentry_sdk.init(dsn=os.environ["SENTRY_DSN"], integrations=[DjangoIntegration()])
-
 
 from pathlib import Path
 from dotenv import load_dotenv, find_dotenv  # type: ignore
@@ -30,6 +28,7 @@ DB_USER = os.getenv("DB_USER")
 HOST = os.getenv("HEROKU_HOST")
 DJANGO_SECRET_KEY = os.getenv("SECRET_KEY")
 
+sentry_sdk.init(dsn=os.getenv("SENTRY_DSN"), integrations=[DjangoIntegration()])
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
