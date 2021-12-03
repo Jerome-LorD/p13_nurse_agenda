@@ -50,7 +50,7 @@ else:
     DEBUG = True
     ALLOWED_HOSTS = []
 
-print(DEBUG)
+
 # Application definition
 
 INSTALLED_APPS = [
