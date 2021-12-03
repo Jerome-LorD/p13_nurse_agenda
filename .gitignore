@@ -8,6 +8,7 @@ env
 scripts/
 index.html
 static/*.html
+**/vendor/
 staticfiles/
 package-lock.json
 package.json

@@ -12,7 +12,7 @@ before_install:
 
 before_script:
   - psql -c 'create database travis_ci_test;' -U postgres
-  - python manage.py collectstatic --noinput  -i node_modules -i scss -i scripts
+  - python manage.py collectstatic --noinput  -i node_modules -i vendor -i scss -i scripts
 
 services:
   - postgresql
@@ -25,5 +25,6 @@ script:
 deploy:
   provider: heroku
   strategy: git
-  api_key:
-    secure: $API_KEY
+  api_key: $API_KEY
+  on:
+    branch: main
