@@ -22,8 +22,6 @@ env: DJANGO_SETTINGS_MODULE="app.settings"
 script:
   - python manage.py test
 
-after_success: ./deploy.sh
-
 deploy:
   provider: heroku
   strategy: git
