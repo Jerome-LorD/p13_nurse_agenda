@@ -66,7 +66,6 @@ def user_profile(request):
         sender = User.objects.filter(pk__in=[i for i in assreq])
     associate = Associate.objects.filter(user_id=request.user.id)
     associate = associate.first()
-    # breakpoint()
 
     if associate:
         # obtains the list of identifiers of the partners of a firm in order to display
