@@ -26,3 +26,5 @@ deploy:
   provider: heroku
   strategy: git
   api_key: $API_KEY
+  on: main
+  app: jlord-nursag-p13
