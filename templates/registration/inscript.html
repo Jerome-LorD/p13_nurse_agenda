@@ -14,7 +14,7 @@
                 <div class="col-lg-6">
                     <div class="p-5">
                         <div class="text-center">
-                            <h1 class="h4 text-gray-900 mb-4">Create an Account!</h1>
+                            <h1 class="h4 text-gray-900 mb-4">Créer un compte !</h1>
                         </div>
                         <form method="post" class="user">
                             {% csrf_token %}
@@ -28,15 +28,15 @@
                             {% endfor %}
 
                             <button type="submit" class="btn btn-primary btn-user btn-block">
-                                Register Account
+                                Enregistrez votre compte
                             </button>
                         </form> 
                         <hr>
                         <div class="text-center">
-                            <a class="small" href="forgot-password.html">Forgot Password?</a>
+                            <a class="small" href="forgot-password.html">Mot de passe perdu ?</a>
                         </div>
                         <div class="text-center">
-                            <a class="small" href="{% url 'login' %}">Already have an account? Login!</a>
+                            <a class="small" href="{% url 'login' %}">Vous avez déjà un compte ? Connectez-vous !</a>
                         </div>
                         </div>
                     </div>
