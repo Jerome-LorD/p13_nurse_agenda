@@ -29,6 +29,6 @@ deploy:
   strategy: git
   api_key:
     secure: Av/Y3CDFNX491N1RnPwb8aa8S0tB66gQ8fRJuMVQXN5iWmFyb+9t9mKMhi2jM2fjk41Mxt5oDruQ5RvC8n93/6Br/ucxcu+jMz1VJGzkGke+TUaxjK9eQTZrgr0JfgwNXRpla0GegiitUlCcQ/MRZvR1UbiJ4akZaghxY78Bs19AM3/WwdUXFLnHI2MWsvqvmOpCM9jDqYNycG4JmtDn+7n8/B+fhq81VKO74xgdiWp2rn7CPl+38sfpJJGcD35zAB17V0SMuUKhzSay4ejuvWhCwPVWzdS5yjWZpJ1UqbtdJq0M4uI7tIXcLdXxgmL92ihG3fVS5rr25NE41hK0LETDduXSBaIxGZ1x79fseQ5i8IC99iAwZbqdR7SuPVKsb4OEYVJIlGDGXH1z/6RdqWL0UhaNOSN6Uog6rcfjhANMPEgnp+6ar9a7IBpKOn4tpytwv8XxCWWGCstei1s+tpPnFa/k7pWz8/vfI5Qu/MqRsG85nNnFMmFmKQrXGcFxtJKnwsHGw4Rpg9ZkKTUHZAnC/kaNEqN1Teh6x8XR1Sg2DChCt+xLduQbuOq5GlLcZ9eupBdtdIwP/DixiWuF5u/oJ+EvZtjBhba5zung+P+WL7/B2bIaHKKLYhpwKzXI6ErIL5IFlBBNSLdKvivazkpUpTSjsj/SSWLMNUwUmeE=
-  true: main
+  on: main
   app:
     main: jlord-nursag-p13
