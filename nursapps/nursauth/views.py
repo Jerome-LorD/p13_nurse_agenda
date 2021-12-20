@@ -3,6 +3,8 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import authenticate
 from django.contrib.auth.decorators import login_required
+from django.http.response import HttpResponseRedirect
+from django.urls import reverse
 from nursapps.agenda.models import Associate, Cabinet, RequestAssociate
 from nursapps.nursauth.models import User
 from .forms import (
@@ -19,15 +21,29 @@ from datetime import datetime, timedelta, date
 
 def inscript(request):
     """Inscript view."""
+    now = datetime.now()
     if request.method == "POST":
         form = InscriptForm(request.POST)
         if form.is_valid():
             user = form.save()
             auth_login(request, user)
-            return redirect("profile")
+            # return redirect("profile")
+            return HttpResponseRedirect(
+                reverse(
+                    "nursauth:profile",
+                )
+            )
     else:
         form = InscriptForm()
-    return render(request, "registration/inscript.html", {"form_ins": form})
+    return render(
+        request,
+        "registration/inscript.html",
+        {
+            "form_ins": form,
+            "current_month": now.month,
+            "current_year": now.year,
+        },
+    )
 
 
 def login(request):
@@ -41,6 +57,11 @@ def login(request):
         if user:
             auth_login(request, user)
             # return redirect("profile")
+            return HttpResponseRedirect(
+                reverse(
+                    "nursauth:profile",
+                )
+            )
     else:
         login_form = NewLoginForm()
     return render(
