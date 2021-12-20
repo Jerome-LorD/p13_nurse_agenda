@@ -153,8 +153,6 @@ def confirm_associate(request):  # valid_association
     associate = associate.first()
 
     if associate:
-        # récupère la liste des ID des associés d'un cabinet pour pouvoir afficher
-        # leurs noms dans le tableau sur la page de profil.
         lst_associates_id = Associate.objects.get_associates(associate.id)
         cab_id = associate.cabinet_id
         cabinet = Cabinet.objects.filter(pk=cab_id).first()
