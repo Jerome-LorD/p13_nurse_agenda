@@ -39,7 +39,6 @@ def trigger_error(request):
 def index(request):
     """Index view."""
     now = datetime.now()
-    # breakpoint()
     cal = CalEvent(request.user, now.year, now.month)
     html_cal = cal.formatmonth(withyear=True)
     return render(
@@ -188,19 +187,13 @@ def daily_agenda(request, year, month, day):
     return render(request, "pages/daily_agenda_details.html", context)
 
 
-format_locale = locale.setlocale(locale.LC_ALL, "French_France.1252")
-
-
 @login_required
 def create_events(request, year, month, day, hour, event_id=None):
     """Create_events."""
     now = datetime.now()
-    print("!!!!!!!!!!!!!!!!!!!!!!!DANS CREATE EVENT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     hours = [str(timedelta(hours=hour))[:-3] for hour in numpy.arange(6, 23, 0.25)]
     # adding a zero before single digit:
     hours = [str(datetime.strptime(i, "%H:%M").time())[:5] for i in hours]
-
-    # if not is_valid_date(int(year), int(month), int(day), hour):
 
     if not is_valid_year_month_day(year, month, day):
         now = datetime.now()
@@ -343,14 +336,11 @@ def edit_event(request, year, month, day, hour, event_id):
 
     event = get_object_or_404(Event, pk=event_id)
     group_event = Event.objects.filter(group_id=event.group_id)
-    # form = formEvent()
 
     day_events = [event.id for event in event_per_day]
-    # breakpoint()
     hour_, minute_ = (int(i) for i in hour.split(":"))
 
     # day_per_week = event.day_per_week.split(", ")
-    # breakpoint()
 
     form = formEvent(
         request.POST or None,
