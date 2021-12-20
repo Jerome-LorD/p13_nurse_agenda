@@ -27,7 +27,6 @@ def inscript(request):
         if form.is_valid():
             user = form.save()
             auth_login(request, user)
-            # return redirect("profile")
             return HttpResponseRedirect(
                 reverse(
                     "nursauth:profile",
@@ -56,7 +55,6 @@ def login(request):
         user = authenticate(request, email=email, password=password)
         if user:
             auth_login(request, user)
-            # return redirect("profile")
             return HttpResponseRedirect(
                 reverse(
                     "nursauth:profile",
