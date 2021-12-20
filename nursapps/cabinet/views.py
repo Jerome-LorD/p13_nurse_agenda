@@ -16,6 +16,10 @@ from django.http.response import (
     JsonResponse,
 )
 
+from datetime import datetime
+
+now = datetime.now()
+
 
 def autocomplete(request):
     """Jquery autocomplete response."""
@@ -46,8 +50,8 @@ def create_new_cabinet(request):
     associate = Associate.objects.filter(user_id=request.user.id)
     associate = associate.first()
     if associate:
-        # récupère la liste des ID des associés d'un cabinet pour pouvoir afficher
-        # leurs noms dans le tableau sur la page de profil.
+        # retrieves the list of IDs of a firm's partners in order to display their
+        # names in the table on the profile page.
         lst_associates_id = Associate.objects.get_associates(associate.id)
         cab_id = associate.cabinet_id
         cabinet = Cabinet.objects.filter(pk=cab_id).first()
@@ -69,7 +73,12 @@ def create_new_cabinet(request):
                 cabinet_id=cabinet.id, user_id=request.user.id
             )
             new_cabinet = cabinet.name
-            return redirect("profile")
+            return HttpResponseRedirect(
+                reverse(
+                    "nursauth:profile",
+                )
+            )
+
     context = {
         "cab_form": cabinet_form,
         "cab": associate,
@@ -96,10 +105,22 @@ def ask_for_associate(request):
             receiver_id=cabass.user_id,
             cabinet_id=cabass.cabinet_id,
         )
-        return redirect("profile")
+        return HttpResponseRedirect(
+            reverse(
+                "nursauth:profile",
+            )
+        )
     else:
         ask_form = SearchForCabinet()
-    return render(request, "registration/askfor.html", {"ask_form": ask_form})
+    return render(
+        request,
+        "registration/askfor.html",
+        {
+            "ask_form": ask_form,
+            "current_month": now.month,
+            "current_year": now.year,
+        },
+    )
 
 
 def confirm_associate(request):  # valid_association
@@ -146,8 +167,6 @@ def confirm_associate(request):  # valid_association
             )
             assreq = association_request.values_list("sender_id", flat=True)
             sender = User.objects.filter(pk__in=[i for i in assreq])
-
-            # return redirect("profile")
 
             return HttpResponseRedirect(
                 reverse(
