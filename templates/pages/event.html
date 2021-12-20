@@ -1,9 +1,6 @@
 {% extends 'pages/base.html' %}
 
-
-
 {% block priserdv %}
-	{# Si l'user tente de modifier l'event_id dans l'URL et que cet event ne lui appartient pas, on le bloque #}
 	{# If the user tries to modify an event in the url which belongs to another user, we prevent him and invite him to go to the previous page. #}
 	{% if int_event_id in events or not event_id %} 
 		{% if hour_rdv in lst_hours %}
@@ -34,7 +31,7 @@
 
 		{% if event_id is not None %}
 			<h4>Supprimer la visite N°{{ event_id }} </h4>
-				<a class="sub-neo" href="{% url 'nurse:agenda_del_rdv' year month day hour_rdv event_id %}"> 
+				<a class="sub-neo" href="{% url 'nurse:del_event' year month day hour_rdv event_id %}"> 
 				<p><input type="submit" value="Supprimer" class="sub-neo"></p> 
 				</a>
 		{% endif %}
@@ -52,20 +49,11 @@
 			entrer 7 comme delta en jour et 3 dans le nombre de jours.
 		</p>
 
-
-
 	{% else %} 
-	Vous n'avez pas la possibilité d'éditer cette entrée. <input type=button value="Revenir sur la page précédente" onClick="javascript:history.go(-1);">   
+		Vous n'avez pas la possibilité d'éditer cette entrée. <input type=button value="Revenir sur la page précédente" onClick="javascript:history.go(-1);">   
 	{% endif %}
 
 {% endblock %}
 
-{% block agenda %}
 
-
-
-
-
-
-{% endblock %}
 

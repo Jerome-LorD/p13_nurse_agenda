@@ -1,39 +1,9 @@
 """Agenda form module."""
 from django import forms
-from django.forms import ModelForm, DateInput
+from django.forms import DateInput
 
-# from django.forms.widgets import DateInput
 from nursapps.agenda.models import Event
 
-# from django.contrib.auth.models import User
-
-# from trocnco.views import cuisine_jour
-
-# class connex(forms.Form):
-
-#   login = forms.CharField(max_length=100,
-#       widget=forms.TextInput(attrs={'class':'part', 'placeholder': 'Login'}), label='')
-#   password = forms.CharField(widget=forms.PasswordInput)
-
-
-# class UserForm(ModelForm):
-#     class Meta:
-#         model = User
-#         fields = "__all__"  # ('username', 'password')
-#         # labels = {
-#         #     "username": _('pseudo'),
-#         # }
-#         # help_texts = {
-#         #     'username': _('Some useful help text.'), # Tout ceci ne fonctionne pas (dû au modelform lié a admin sans doute)
-#         # }
-#         # error_messages = {
-#         #     'username': {
-#         #         'max_length': _("This writer's name is too long."),
-#         #     },
-#         # }
-#         widgets = {
-#             "password": forms.PasswordInput(),
-#         }
 
 DATE_ERROR_MESSAGE = {
     "required": "This field is required",
