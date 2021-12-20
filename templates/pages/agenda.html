@@ -1,0 +1,94 @@
+{% extends "pages/base.html" %}
+
+{% load static %}
+
+
+
+
+{% comment %} <body onload=display_ct();>
+	<section id="page">
+	<header><a href="{% url 'nurse:index' %}">Lib'IDE Agenda - Organizer</a></header>
+	<nav> 
+
+<h2>Menu</h2>
+<ul>
+  <li><a href="{% url 'nurse:index' %}">Accueil</a></li>
+  <li><a href="{% url 'nursauth:profile' %}">Home (mon compte)</a></li><br>
+  <li>{{ user.username }} : <a href="{% url 'nursauth:user_logout' %}">Déconnexion</a></li><br>
+  <li><a href="{% url 'nursauth:password_reset' %}">Changer de mot de passe</a></li>
+  
+</ul>
+	</nav>{% endcomment %}
+  {% block main_agenda %}
+  <div class="hat">
+	<a class="left rlcal" href="{% url 'nurse:main_agenda' prec_an prec_mois %}">{{prev}}</a>
+	<a class="right rlcal" href="{% url 'nurse:main_agenda' suiv_an suiv_mois %}">{{nextmth}}</a>
+	</div>
+	<div id="incal">
+	{{ html_calendar }}
+	</table>
+	</div>
+
+  {% endblock %}
+	<main>
+
+
+
+<h4>Quelques projets :</h4>
+<ul>
+	<li>Ajout d'un champ "téléphone" dans models,</li>
+	<li>vignettes récapitulatives par soins, des images pour gagner de la place dans le tableau de la page agenda,</li>
+	<li>SUPPRESSION des rdv en cas d'annulation,</li>
+	<li>A suivre</li>
+</ul>
+
+<p>L'agenda est responsive. On peut publier des évenements → RDV.
+<br>
+L'outil est fonctionnel pour un compte unique (une équipe) et il permet de créer ou d'accéder a des données perso par ID.<br>Chaque compte a son propre environnement qui ne se téléscope pas avec les autres.</p>
+
+<h4>Améliorations des fonctionnalités :</h4>
+<p>Pouvoir zapper comme sur cette page d'un mois à l'autre, d'un jour à l'autre directement dans l'agenda (le tableau des rdv) pour éviter de devoir passer par agenda → calendrier → choix du jour.<br>Sur l'agenda, il faut pouvoir changer de jour (avant et après):<br><ul><li>nom_du_jour_d_avant et nom_du_jour_d_apres</li>ou<li>un mini calendrier en haut à gauche permettant de cliquer sur la date de son choix,</li>ou encore<li>une liste déroulante des heures déja prises le même jour.</li></ul>D'autre part, je cherche le moyen de "masquer" ce type d'URL : <br>../cuisine/2020/07/26/rdv/10:15/neo/<br>par une expression de type "espace_perso" pour éviter les manips dans le browser.</p>
+
+
+<h4>Idées en vrac :</h4>
+<p>Limiter la navigation dans le calendrier pour éviter les abus :<br>Par exemple, il est actuellement possible de prendre une date très reculée ou très avancée et d'y enregistrer des données (quelque soit la pertinence des données entrées dans un champs de commentaires. Un abus comme le fait de noter des infos illégales et de les partager avec tous ceux qui ont le compte d'un éventuel cabinet).<br>Pour pallier à ça, il serait peut être judicieux de ne donner accès à un compte qu'à partir de sa date d'inscription, impossible pour lui d'aller vers les dates précédant l'ouverture de son compte. Et sur le même principe, bloquer la navigation dans les dates futures à deux mois. Si un compte ne fait pas des journées à plus de 15 rdv, son compte considéré comme inactif pourrait être fermé ou limité d'une manière ou d'une autre.<br>Une inscription plus "officielle" comprenant le "N° de société" à comparer avec une liste de "sociétés" éxistantes dans le but d'engager la "responsabilité" des utilisateurs.</p>
+<p>Limiter le nombre de carractère dans le champ de commentaires pour ne pas saturer la bdd de pavés type roman. La zone commentaires ne doit pas donner l'impression d'un espace illimité (dans sa forme) mais ne doit pas non plus accèpter plus de tant de carractères. Il s'agit de simple mémos, on y inscrit des infos sommaires mais il ne s'agit pas de s'en servir pour faire des transmissions.</p>
+<br>
+
+<p>Le calendrier permet de naviguer dans un écart de dates compris entre l'an 2 et 9999, en deça ou au delà, on à une belle érreur.<br>Dans l'idéal, distinguer par un code couleur simple les soins passés, en cours et futurs.</p>
+
+</p>
+&#128137; seringue html
+<span class="sering"> seringue css</span>
+
+<p>{% lorem  1 p %}</p>
+
+
+
+	</main>
+	<aside>
+	<h5>Qui est là ?</h5>
+{% if request.user in request.online_now %}
+   <p class="whois"> {{ request.online_now.count }} utilisateur{{ request.online_now.count|pluralize }} connecté :</p>
+{% endif %}
+		
+		
+		
+{% for user in request.online_now %}
+<ul>
+	<li class="whois">{{user}}</li>
+</ul>
+    
+{% endfor %}
+
+	</aside>
+	<footer>
+		
+		
+		<p>Lien</p>
+		<p>copyleft</p>
+		<p>Logos</p>
+	</footer>
+	</section>
+</body>
+</html>

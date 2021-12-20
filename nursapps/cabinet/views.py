@@ -3,7 +3,8 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from nursapps.agenda.models import Associate, Cabinet, RequestAssociate
 from nursapps.nursauth.models import User
-
+from django.http.response import HttpResponseRedirect
+from django.urls import reverse
 from nursapps.cabinet.forms import (
     CreateCabinet,
     SearchForCabinet,
@@ -146,7 +147,14 @@ def confirm_associate(request):  # valid_association
             assreq = association_request.values_list("sender_id", flat=True)
             sender = User.objects.filter(pk__in=[i for i in assreq])
 
-            return redirect("profile")
+            # return redirect("profile")
+
+            return HttpResponseRedirect(
+                reverse(
+                    "nursauth:profile",
+                )
+            )
+
     context = {
         "sender": sender,
         "cab_name": cab_name,

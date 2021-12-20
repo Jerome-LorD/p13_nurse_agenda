@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "nursapps.agenda",
     "nursapps.nursauth",
+    "nursapps.cabinet",
 ]
 
 MIDDLEWARE = [
@@ -133,6 +134,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+
+AUTHENTICATION_BACKENDS = [
+    "nursapps.nursauth.authenticate.EmailAuth",
+]
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/

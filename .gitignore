@@ -9,6 +9,7 @@ scripts/
 index.html
 static/*.html
 **/vendor/
+**/vendor/*
 staticfiles/
 package-lock.json
 package.json

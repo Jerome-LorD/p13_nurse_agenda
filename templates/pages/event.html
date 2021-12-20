@@ -1,0 +1,71 @@
+{% extends 'pages/base.html' %}
+
+
+
+{% block priserdv %}
+	{# Si l'user tente de modifier l'event_id dans l'URL et que cet event ne lui appartient pas, on le bloque #}
+	{# If the user tries to modify an event in the url which belongs to another user, we prevent him and invite him to go to the previous page. #}
+	{% if int_event_id in events or not event_id %} 
+		{% if hour_rdv in lst_hours %}
+			{% if warn == True %}
+				Attention, cette action ne sera pas enregistrée.
+			{% endif %}
+			{% if request.session.already_took and hour_rdv != booked_time %} 
+				{{ booked_time }} est déjà réservé.
+			{% endif %}
+			<form method="post" class="formrdv">
+				<fieldset style="width:50%; margin:0 auto;">
+				{% csrf_token %}
+				<ul class="form">
+					{{ form.as_ul }}
+				</ul>
+
+					<a class="sub-neo" href="{% url 'nurse:daily_agenda' year month day %}"> Annuler </a>
+					<!-- <button type="submit" class="sub-neo right"> Enregistrer </button> -->
+					<input type="submit" class="right sub-neo" name="" value="Enregistrer">
+				</fieldset>	
+			</form>
+		{% else %}
+			<div style="color: #ff7171; font-size:1.1em; padding: 5px 5px;">
+			Oups ! Vous ne pouvez pas faire ce genre de modifications.<br> 
+			</div><input type=button value="Revenir sur la page précédente" onClick="javascript:history.go(-1);">
+		{% endif %}
+		<br>
+
+		{% if event_id is not None %}
+			<h4>Supprimer la visite N°{{ event_id }} </h4>
+				<a class="sub-neo" href="{% url 'nurse:agenda_del_rdv' year month day hour_rdv event_id %}"> 
+				<p><input type="submit" value="Supprimer" class="sub-neo"></p> 
+				</a>
+		{% endif %}
+		
+		<h3>Usage</h3>
+		<ul>
+			<li>1. Entrez le nombre de visites par jour au total</li>
+			<li>2. Entrez de delta en heure entre chaque visite dans une journée</li>
+			<li>3. Entrez le delta en jour entre chaque visite</li>
+			<li>4. Entrez le nombre de jours</li>
+		</ul>
+		<p>Le principe est celui-ci :</p>
+		<p>Pour enregistrer une visite une fois par semaine tous les mercredi à 16h15 pendant 3 semaines, il faut
+			sélectionner le jour et l'heure puis préciser 1 visite par jour, laisser le champ delta en heure vide, 
+			entrer 7 comme delta en jour et 3 dans le nombre de jours.
+		</p>
+
+
+
+	{% else %} 
+	Vous n'avez pas la possibilité d'éditer cette entrée. <input type=button value="Revenir sur la page précédente" onClick="javascript:history.go(-1);">   
+	{% endif %}
+
+{% endblock %}
+
+{% block agenda %}
+
+
+
+
+
+
+{% endblock %}
+

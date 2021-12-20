@@ -14,6 +14,8 @@ from nursapps.cabinet.forms import (
     AssociationValidation,
 )
 
+from datetime import datetime, timedelta, date
+
 
 def inscript(request):
     """Inscript view."""
@@ -30,6 +32,7 @@ def inscript(request):
 
 def login(request):
     """Login view."""
+    now = datetime.now()
     if request.method == "POST":
         login_form = NewLoginForm(request.POST)
         email = request.POST.get("email")
@@ -37,13 +40,17 @@ def login(request):
         user = authenticate(request, email=email, password=password)
         if user:
             auth_login(request, user)
-            return redirect("profile")
+            # return redirect("profile")
     else:
         login_form = NewLoginForm()
     return render(
         request,
         "registration/login.html",
-        {"login_form": login_form},
+        {
+            "login_form": login_form,
+            "current_month": now.month,
+            "current_year": now.year,
+        },
     )
 
 
@@ -55,6 +62,7 @@ def user_profile(request):
     lst_associates_id = None
     cab_id = None
     cab_name = None
+    now = datetime.now()
 
     cab_form = CreateCabinet(request.POST)
     valid_form = AssociationValidation(request.POST)
@@ -89,5 +97,7 @@ def user_profile(request):
         "cab_id": cab_id,
         "cab_name": cab_name,
         "reqass": sender_request,
+        "current_year": now.year,
+        "current_month": now.month,
     }
     return render(request, "registration/profile.html", context)
