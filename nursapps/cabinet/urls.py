@@ -2,6 +2,8 @@
 from django.urls import path, re_path
 from nursapps.cabinet import views
 
+app_name = "cabinet"
+
 urlpatterns = [
     path("accounts/profile/new_cabinet/", views.create_new_cabinet, name="create"),
     path("accounts/profile/ask-for-associate/", views.ask_for_associate, name="askfor"),
