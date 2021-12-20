@@ -26,7 +26,7 @@
 					<td class="rdv">
 						<b></b> {% for rdv in appointments_per_day %} {% if request.user.id == rdv.user_id and rdv.date|time:'H:i' == hour|time:'H:i' %} {{rdv.name}} 
 						<br>
-						<b>Adresse</b> :  {{rdv.address}}   {% endif %}{% endfor %} 
+						<b>Adresse</b> :  {{rdv.care_address}}   {% endif %}{% endfor %} 
 					</td>
 					<td class="rdv">
 						{% for rdv in appointments_per_day %} {% if request.user.id == rdv.user_id and rdv.date|time:'H:i' == hour|time:'H:i' %}{{rdv.cares}}{% endif %}{% endfor %} 
@@ -44,7 +44,7 @@
 					<td class="rdv">
 						{% for rdv in appointments_per_day %} {% if request.user.id == rdv.user_id and rdv.date|time:'H:i' == hour|time:'H:i' %} {{rdv.name}} 
 						<br>
-						<b>Adresse</b> :  {{rdv.address}} {% endif %}{% endfor %} 
+						<b>Adresse</b> :  {{rdv.care_address}} {% endif %}{% endfor %} 
 					</td>
 					<td class="rdv">
 						{% for rdv in appointments_per_day %} {% if request.user.id == rdv.user_id and rdv.date|time:'H:i' == hour|time:'H:i' %}{{rdv.cares}}{% endif %}{% endfor %}  
@@ -54,17 +54,17 @@
 			{% elif hour|time:"i" < '15' %}
 				<tr class="rdv">
 					<td class="rdv" width="7em">
-						<a class="rowlink" href="{% if hour|time:'H:i' not in lapj %} {{new_event}}{% else %}{% for i in appointments_per_day %}{% if request.user.id == i.user_id and hour|time:'H:i' in i.get_html_url %} {{i.get_html_url}} {% endif %}{% endfor %}{% endif %}">
+						<a class="rowlink" href="{% if hour|time:'H:i' not in lapj %} {{new_event}}{% else %}{% for event in appointments_per_day %}{% if request.user.id == event.user_id and hour|time:'H:i' in event.get_html_url %} {{event.get_html_url}} {% endif %}{% endfor %}{% endif %}">
 							<b>{{hour}}</b>
 						</a>
 					</td>
-					<td class="rdv">
-						<b></b> {% for rdv in appointments_per_day %} {% if request.user.id == rdv.user_id and rdv.date|time:'H:i' == hour|time:'H:i' %} {{rdv.name}} 
+					<td class="rdv"> 
+						<b></b> {% for event in appointments_per_day %} {% if request.user.id == event.user_id and event.date|time:'H:i' == hour|time:'H:i' %} {{event.name}} 
 						<br>
-						<b>Adresse</b> :  {{rdv.address}} {% endif %}{% endfor %} 
+						<b>Adresse</b> : {{event.care_address}} {% endif %}{% endfor %} 
 					</td>
 					<td class="rdv">
-						{% for rdv in appointments_per_day %} {% if request.user.id == rdv.user_id and rdv.date|time:'H:i' == hour|time:'H:i' %}{{rdv.cares}}{% endif %}{% endfor %} 
+						{% for event in appointments_per_day %} {% if request.user.id == event.user_id and event.date|time:'H:i' == hour|time:'H:i' %}{{event.cares}}{% endif %}{% endfor %} 
 					</td>
 				</tr>
 
@@ -81,7 +81,7 @@
 							{% if request.user.id == rdv.user_id and rdv.date|time:'H:i' == hour|time:'H:i' %}  
 								{{rdv.name}} 
 						<br>
-							<b>Adresse</b> :  {{rdv.address}} {{rdv.id}} 
+							<b>Adresse</b> :  {{rdv.care_address}} {{rdv.id}} 
 							{% endif %}
 						{% endfor %} 
 					</td>

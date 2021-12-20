@@ -17,10 +17,13 @@ class Cabinet(models.Model):
 
     name = models.CharField(max_length=240, unique=True, default=False, blank=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Str representation."""
         return self.name
 
     class Meta:
+        """Meta."""
+
         ordering = ["name"]
 
 
@@ -60,7 +63,6 @@ class EventManager(models.Manager):
 
     def create(self, *args, **kwargs):
         """Create event."""
-        # user = kwargs["user"]
         return super().create(*args, **kwargs)
 
 
@@ -98,7 +100,7 @@ class Event(models.Model):
     def get_html_url(self):
         """Get html url."""
         url = reverse(
-            "agenda:agenda_edit_rdv",
+            "nurse:edit_event",
             args=(
                 self.date.strftime("%Y"),
                 self.date.strftime("%m"),

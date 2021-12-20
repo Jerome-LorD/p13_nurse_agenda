@@ -7,10 +7,6 @@ app_name = "nurse"
 
 urlpatterns = [
     path("", views.index, name="index"),
-    # path("", views.login),
-    # re_path(r"^inscription/$", views.inscript, name="inscription"),
-    # path("agenda/", views.indexcuis, name="index_agenda"),
-    # path("agenda/<int:annee>/", views.agenda_an, name="agenda_an"),
     path("agenda/<int:year>/<int:month>/", views.agenda, name="main_agenda"),
     path(
         "agenda/<int:year>/<int:month>/<int:day>/",

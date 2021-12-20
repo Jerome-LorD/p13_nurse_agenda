@@ -1,6 +1,5 @@
 """Agenda view module."""
 import datetime as dt
-import locale
 import numpy
 
 from django.http.response import HttpResponseRedirect
@@ -127,6 +126,7 @@ def home(request):
 @login_required
 def daily_agenda(request, year, month, day):
     """Agenda jour."""
+    print("-------------------------DANS AG JOUR--------------------------------------")
     now = datetime.now()
     event = Event.objects.filter(user_id=request.user.id).first()
 
@@ -323,6 +323,7 @@ def delete_event(request, year, month, day, hour, event_id):
 
 def edit_event(request, year, month, day, hour, event_id):
     """Edit event."""
+    now = datetime.now()
     # TODO:
     hour_rdv = str(hour)
     hours = [str(timedelta(hours=hour))[:-3] for hour in numpy.arange(6, 23, 0.25)]
@@ -388,7 +389,7 @@ def edit_event(request, year, month, day, hour, event_id):
             )
     return render(
         request,
-        "trocnco/event.html",
+        "pages/event.html",
         {
             "form": form,
             "hour_rdv": event.date.strftime("%H:%M"),
@@ -402,5 +403,7 @@ def edit_event(request, year, month, day, hour, event_id):
             "lst_hours": hours,
             "event": event,
             # "selected_date": editable_forms["formdate"][-5:],
+            "current_month": now.month,
+            "current_year": now.year,
         },
     )
