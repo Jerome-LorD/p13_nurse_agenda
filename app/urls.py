@@ -21,4 +21,5 @@ urlpatterns = [
     path("", include("nursapps.agenda.urls")),
     path("", include("nursapps.cabinet.urls")),
     path("auth/", include("nursapps.nursauth.urls")),
+    path("", include("django.contrib.auth.urls")),
 ]

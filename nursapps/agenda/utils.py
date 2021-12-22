@@ -2,15 +2,9 @@
 import datetime as dt
 import calendar
 from datetime import datetime, timedelta
-from calendar import HTMLCalendar, month
+from calendar import HTMLCalendar
 from nursapps.agenda.models import Event
 from django.template.defaultfilters import pluralize
-from django.shortcuts import redirect
-
-# from .decorators import unauthenticated_user, allowed_users, current_user
-from django.db.models import Count
-
-# from django.contrib.auth.models import User
 
 
 class CalEvent(HTMLCalendar):
@@ -26,45 +20,34 @@ class CalEvent(HTMLCalendar):
 
     def formatday(self, day, activites):
         """Format day."""
-        activitesParJour = Event.objects.filter(
-            date__year=self.year, date__month=self.month, date__day=day
-        )
-        nb_rdv = activitesParJour.count()
-        activitesParJourParUser = Event.objects.filter(
+        event = Event.objects.filter(
             date__year=self.year,
             date__month=self.month,
             date__day=day,
             user_id=self.user.id,
         )
-        nb_rdv_byID = activitesParJourParUser.count()
+        total_event_by_id = event.count()
 
-        datas = ""
-        # for activite in activitesParJour:
-
-        # 	datas += f''#<p><a class="">test</a></p>'
-
-        lejour = datetime.today().strftime("%d")
-        lemois = datetime.today().strftime("%m")
-        if day != 0 and day != int(lejour):
-            if nb_rdv_byID == 0:
-                return f"<td><a href='{day}'><span class='date'>{day}</span> {datas} </a></td>"
+        day_ = datetime.today().strftime("%d")
+        month_ = datetime.today().strftime("%m")
+        if day != 0 and day != int(day_):
+            if total_event_by_id == 0:
+                return f"<td><a href='{day}'><span class='date'>{day}</span>  </a></td>"
             else:
-                return f"<td><a href='{day}'><span class='date'>{day}</span><span class='nb_rdv'>{datas}{nb_rdv_byID} visite{pluralize(nb_rdv_byID)}</span></a></td>"
-        elif day != 0 and day == int(lejour) and self.month == int(lemois):
+                return f"<td><a href='{day}'><span class='date'>{day}</span><span class='nb_rdv'>{total_event_by_id} visite{pluralize(total_event_by_id)}</span></a></td>"
+        elif day != 0 and day == int(day_) and self.month == int(month_):
             return (
-                f"<td class='date-today'><a href='{day}'><span class='date'>{day}</span><span class='nb_rdv'> {datas}{nb_rdv_byID} visite{pluralize(nb_rdv_byID)}</span></a></td>"
-                if nb_rdv_byID > 0
-                else f"<td class='date-today'><a href='{day}'><span class='date'>{day}</span><span class='nb_rdv'> {datas}</span></a></td>"
+                f"<td class='date-today'><a href='{day}'><span class='date'>{day}</span><span class='nb_rdv'> {total_event_by_id} visite{pluralize(total_event_by_id)}</span></a></td>"
+                if total_event_by_id > 0
+                else f"<td class='date-today'><a href='{day}'><span class='date'>{day}</span><span class='nb_rdv'> </span></a></td>"
             )
-        elif day != 0 and self.month != int(lemois):
-            if nb_rdv_byID == 0:
-                return f"<td><span class='date'>{day}</span> {datas} </td>"
+        elif day != 0 and self.month != int(month_):
+            if total_event_by_id == 0:
+                return f"<td><span class='date'>{day}</span>  </td>"
             else:
-                return f"<td><a href='{day}'><span class='date'>{day}</span><span class='nb_rdv'> {datas}{nb_rdv_byID} visite{pluralize(nb_rdv_byID)}</span></a></td>"
+                return f"<td><a href='{day}'><span class='date'>{day}</span><span class='nb_rdv'> {total_event_by_id} visite{pluralize(total_event_by_id)}</span></a></td>"
         else:
             return f"<td class='noday'></td>"
-
-        return "<td></td>"
 
     def formatweek(self, theweek, activites):
         """Format week."""
@@ -76,70 +59,18 @@ class CalEvent(HTMLCalendar):
 
     def formatmonth(self, withyear=True):
         """Format month."""
-        # if self.is_date_illegal(self.year, self.month):
-        #     now = datetime.now()
-        #     self.year = now.year
-        #     self.month = now.month
-
-        # breakpoint()
-
         activites = Event.objects.filter(date__year=self.year, date__month=self.month)
-        #   class="table table-bordered table-dark"
         cal = f'<table class="table" border="0" cellpadding="0" cellspacing="0"><tr><th class="year" colspan="7"> </th></tr>\n'
         cal += f"{self.formatmonthname(self.year, self.month, withyear=True)}\n"
-        cal += f"{self.formatweekheader()}\n"  # w).rstrip()}\n'
+        cal += f"{self.formatweekheader()}\n"
         for week in self.monthdays2calendar(self.year, self.month):
             cal += f"{self.formatweek(week, activites)}\n"
         return cal
-
-    # def last_day(self, year, month):
-    #     return calendar.monthrange(year, month)[1]
-
-    # def is_date_illegal(self, year, month, day=None, hour=None):
-    #     """Redirect url to the now.year if date is too late."""
-    #     now = datetime.now()
-
-    #     if (
-    #         now.year == self.year
-    #         or now.year + 1 == self.year
-    #         # or now.month < self.month > now.month
-    #         # or self.month > 12
-    #         # or self.month < 1
-    #         and self.month in list(range(1, 13))
-    #     ):
-    #         print("self.Illegal")
-    #         return True
-
-    #     else:
-    #         print("self.Not illegal")
-    #         return False
 
 
 def last_day(year, month):
     """Return the last day number of the month."""
     return calendar.monthrange(year, month)[1]
-
-
-# def is_valid_date(year, month, day=None, hour=None, event_id=None):
-#     """Redirect url to the now.year if date is too late."""
-#     now = datetime.now()
-#     if not day and not isinstance(day, int):
-#         return (
-#             True
-#             if (int(year) == now.year or int(year) == now.year + 1)
-#             and int(month) in list(range(1, 13))
-#             else False
-#         )
-#     else:
-#         return (
-#             True
-#             if (int(year) == now.year or int(year) == now.year + 1)
-#             and int(month) in list(range(1, 13))
-#             and int(day)
-#             in list(range(1, calendar.monthrange(int(year), int(month))[1] + 1))
-#             or int(day) > 0
-#             else False
-#         )
 
 
 def is_valid_year_month(year, month):

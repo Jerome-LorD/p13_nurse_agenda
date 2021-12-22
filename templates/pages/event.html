@@ -17,9 +17,9 @@
 					{{ form.as_ul }}
 				</ul>
 
-					<a class="sub-neo" href="{% url 'nurse:daily_agenda' year month day %}"> Annuler </a>
+					<a class="right btn btn-light" href="{% url 'nurse:daily_agenda' year month day %}"> Annuler </a>
 					<!-- <button type="submit" class="sub-neo right"> Enregistrer </button> -->
-					<input type="submit" class="right sub-neo" name="" value="Enregistrer">
+					<input type="submit" class="right btn btn-success" name="" value="Enregistrer">
 				</fieldset>	
 			</form>
 		{% else %}
@@ -31,11 +31,11 @@
 
 		{% if event_id is not None %}
 			<h4>Supprimer la visite N°{{ event_id }} </h4>
-				<a class="sub-neo" href="{% url 'nurse:del_event' year month day hour_rdv event_id %}"> 
-				<p><input type="submit" value="Supprimer" class="sub-neo"></p> 
+				<a class="btn" href="{% url 'nurse:del_event' year month day hour_rdv event_id %}"> 
+				<input type="submit" value="Supprimer" class="btn btn-warning">
 				</a>
 		{% endif %}
-		
+		<hr>
 		<h3>Usage</h3>
 		<ul>
 			<li>1. Entrez le nombre de visites par jour au total</li>

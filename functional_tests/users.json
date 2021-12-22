@@ -1,0 +1,36 @@
+[
+{
+    "model": "nursauth.user",
+    "pk": 1,
+    "fields": {
+        "password": "pbkdf2_sha256$260000$nIQSpKkeF7JUducy2DcbeF$fUlKT/2FIDRbwzCYooTw7B8Cs8TK99vL78XuS0B7oAQ=",
+        "last_login": null,
+        "is_superuser": true,
+        "username": "puradmin",
+        "first_name": "",
+        "last_name": "",
+        "is_staff": true,
+        "is_active": true,
+        "date_joined": "2021-08-28T13:49:04.400Z",
+        "email": "puradmin@localhost.com",
+        "is_cabinet_owner": false
+    }
+},
+{
+    "model": "nursauth.user",
+    "pk": 2,
+    "fields": {
+        "password": "pbkdf2_sha256$260000$WamsQ6n5O6LHyxP64Omd1h$3nxHraKnolv8ZNZs6XYnzGTaZq2zw+uw4FrSkPCNrcc=",
+        "last_login": "2021-08-28T13:51:36.000Z",
+        "is_superuser": false,
+        "username": "bill",
+        "first_name": "",
+        "last_name": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2021-08-28T13:51:33.689Z",
+        "email": "bill@bool.com",
+        "is_cabinet_owner": true
+    }
+}
+]

@@ -1,12 +1,15 @@
 {% extends "pages/base.html" %}
 {% load static %}
-{% block title %}Mon compte{% endblock title %}
+{% block title %}IDE Agenda -- Mon compte{% endblock title %}
 
-<script>
-    const autocomp_source = "{% url 'autocomplete' %}";
-</script>
 
 {% block profile %}
+
+<script>
+    const autocomp_source = "{% url 'cabinet:autocomplete' %}";
+</script>
+
+
         <div class="row justify-content-center">
             <div class="col-xl-10 col-lg-12 col-md-9">
                 <div class="card o-hidden border-0 shadow-lg my-5">
@@ -33,7 +36,7 @@
                     Création d'un cabinet :<br>Saisissez le nom de votre cabinet, s'il apparait dans l'autocomplete c'est qu'il existe déjà et vous 
                     devez faire une demande à son propriétaire.<br>Sinon, vous pouvez le créer.
 
-                    <form method="post" action="{% url 'create' %}"> <!-- -->
+                    <form method="post" action="{% url 'cabinet:create' %}"> <!-- -->
                         {% csrf_token %}
                         {{ cab_form.as_ul }}<br><br><br>
                         <input type="submit" value="Submit">
@@ -84,7 +87,7 @@
                         {% for i in sender %}
 
                         <p>Une demande d'association de la part de <b>{{i.email}}</b> attend une action de votre part :</p>
-                        <form action="{% url 'confirm_associate' %}" method="post">
+                        <form action="{% url 'cabinet:confirm_associate' %}" method="post">
                             {% csrf_token %}
                         <input type="hidden"
                             name="{{ valid_form.confirm.name }}"

@@ -8,6 +8,7 @@ from nursapps.nursauth.models import User
 from django.urls import reverse
 from dateutil.rrule import WEEKLY, rrule, SU, MO, TU, WE, TH, FR, SA
 from dateutil.parser import *
+from datetime import datetime, timedelta
 
 UserModel = get_user_model()
 
@@ -65,10 +66,32 @@ class EventManager(models.Manager):
         """Create event."""
         return super().create(*args, **kwargs)
 
+    # def update(self, *args, **kwargs):
+    #     """Create event."""
+    #     return super().update(*args, **kwargs)
+
 
 def random_group_id():
     """Generate a random ID to identify a group of event."""
     return str(random.randint(1000, 1000000000))
+
+
+def update_date_list(date_list, new_day=0, new_hour=0, new_minute=0):
+    """Update date list.
+
+    Returns an updated list to handle the recursion per
+    week with a recursion during the day.
+    """
+    start_day = date_list[0].day
+    start_hour = date_list[0].hour
+    start_minute = date_list[0].minute
+    new_date_list = []
+    for date_in in date_list:
+        date_in += timedelta(days=new_day - start_day)
+        date_in += timedelta(hours=new_hour - start_hour)
+        date_in += timedelta(minutes=new_minute - start_minute)
+        new_date_list.append(date_in)
+    return new_date_list
 
 
 class Event(models.Model):
@@ -113,12 +136,9 @@ class Event(models.Model):
 
     def create_events(self, user_id):
         """Create events."""
-        # If some days are selected for recurrency
-        # if not self.delta_visit_per_hour:
-        #     self.delta_visit_per_hour = 1
         if self.day_per_week and self.delta_visit_per_hour:
-            breakpoint()
             for index in list(range(0, int(self.days_number))):  # number_of_days
+                ajust = 1
                 Event.objects.create(
                     total_visit_per_day=self.total_visit_per_day,
                     delta_visit_per_day=self.delta_visit_per_day,
@@ -141,7 +161,13 @@ class Event(models.Model):
                                     range(
                                         int(self.date.hour),
                                         (
-                                            int(self.date.hour)
+                                            (
+                                                int(self.delta_visit_per_hour) + ajust
+                                                if int(self.delta_visit_per_hour) > 3
+                                                else int(self.delta_visit_per_hour)
+                                                + ajust
+                                                + 1
+                                            )
                                             * int(self.total_visit_per_day)
                                         ),
                                         int(self.delta_visit_per_hour),
@@ -191,3 +217,130 @@ class Event(models.Model):
                         )
                     ][index],
                 )
+        elif (
+            not self.day_per_week
+            and not self.delta_visit_per_hour
+            and int(self.days_number) < 2
+        ):
+            # In case of unique day at a unique hour
+            print("create 3")
+            for i in range(
+                0,
+                int(self.total_visit_per_day) * int(self.delta_visit_per_day),
+                int(self.delta_visit_per_day),
+            ):
+                Event.objects.create(
+                    total_visit_per_day=self.total_visit_per_day,
+                    delta_visit_per_day=self.delta_visit_per_day,
+                    delta_visit_per_hour=self.delta_visit_per_hour,
+                    days_number=self.days_number,
+                    name=self.name,
+                    care_address=self.care_address,
+                    cares=self.cares,
+                    user_id=user_id,
+                    group_id=self.group_id,
+                    date=self.date + timedelta(days=i),
+                )
+        elif (
+            not self.day_per_week
+            and not self.delta_visit_per_hour
+            and int(self.days_number) > 1
+        ):
+
+            steli = self.get_date_list()
+
+            # print(self.get_date_list(), self.days_number)
+            # breakpoint()
+            for index in range(0, int(self.days_number)):
+                # In case of unique day at a unique hour during several consecutive days
+                print("create 3 bis")
+
+                # breakpoint()
+                Event.objects.create(
+                    total_visit_per_day=self.total_visit_per_day,
+                    delta_visit_per_day=self.delta_visit_per_day,
+                    delta_visit_per_hour=self.delta_visit_per_hour,
+                    days_number=self.days_number,
+                    name=self.name,
+                    care_address=self.care_address,
+                    cares=self.cares,
+                    user_id=user_id,
+                    group_id=self.group_id,
+                    date=steli[index],
+                )
+
+        elif not self.day_per_week and self.delta_visit_per_hour:
+            # In case of unique day with recurence in it.
+            print("create 4")
+            for i in range(
+                0,
+                int(self.total_visit_per_day) * int(self.delta_visit_per_hour),
+                int(self.delta_visit_per_hour),
+            ):
+                Event.objects.create(
+                    total_visit_per_day=self.total_visit_per_day,
+                    delta_visit_per_day=self.delta_visit_per_day,
+                    delta_visit_per_hour=self.delta_visit_per_hour,
+                    days_number=self.days_number,
+                    name=self.name,
+                    care_address=self.care_address,
+                    cares=self.cares,
+                    user_id=user_id,
+                    group_id=self.group_id,
+                    date=self.date + timedelta(hours=i),
+                )
+
+    def get_date_list(self):
+        """Get date list."""
+        one2many = [self.date]
+        for index in list(range(0, int(self.days_number))):
+            self.date += timedelta(days=1)
+            one2many.append(self.date)
+        return one2many
+
+    def update_events(self, group_event):
+        """Update events."""
+        events = Event.objects.all()
+
+        dates_list = [event.date for event in group_event]
+
+        dates_list = update_date_list(
+            dates_list, self.date.day, self.date.hour, self.date.minute
+        )
+
+        if (
+            len(self.day_per_week.split(", ")) > 1
+            or self.delta_visit_per_hour
+            or int(self.days_number) > 1
+        ):
+            # Update a unique day and a group of days [with recurency].
+            print("upd 1")
+            for index, event in enumerate(group_event):
+                Event.objects.filter(pk=event.id).update(
+                    name=self.name,
+                    care_address=self.care_address,
+                    cares=self.cares,
+                    user_id=self.user.id,
+                    date=dates_list[index],
+                )
+        elif (
+            not self.day_per_week
+            and not self.delta_visit_per_hour
+            and int(self.days_number) == 1
+        ):
+            print("upd 2")
+            breakpoint()
+            # Update a unique day without recurency
+            for event in group_event:
+                if self.date not in [i.date for i in events]:
+                    event.date += timedelta(days=(self.date.day - event.date.day))
+                    event.date += timedelta(hours=(self.date.hour - event.date.hour))
+                    event.date += timedelta(
+                        minutes=(self.date.minute - event.date.minute)
+                    )
+                    event.name = self.name
+                    event.cares = self.cares
+                    event.save()
+
+                else:
+                    return True

@@ -16,5 +16,6 @@ package.json
 **/js/demo/
 .html
 .git
+geckodriver.log
 PRO_UPGRADE.txt
 db.sqlite3

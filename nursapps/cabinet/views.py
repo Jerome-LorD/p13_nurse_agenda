@@ -63,23 +63,12 @@ def create_new_cabinet(request):
         try:
             cabin = Cabinet.objects.get(name=cabinet)
             if not request.user.is_cabinet_owner:
-                return HttpResponseRedirect(
-                    reverse(
-                        "cabinet:askfor",
-                        {
-                            "current_month": now.month,
-                            "current_year": now.year,
-                        },
-                    )
-                )
+                return HttpResponseRedirect(reverse("cabinet:askfor"))
             return HttpResponseRedirect(
                 reverse(
                     "nursauth:profile",
                 )
             )
-
-            #     return redirect("askfor")
-            # return redirect("profile")
         except Cabinet.DoesNotExist:
             cabinet = Cabinet.objects.create(name=cabinet)
             request.user.is_cabinet_owner = True

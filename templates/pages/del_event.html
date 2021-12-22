@@ -1,0 +1,21 @@
+
+{% extends 'pages/base.html' %}
+
+{% block title %}Suppression d'un rdv{% endblock %}
+
+{% block del_event %}
+
+  {% if event_id is not None %}
+    <div class="supp">
+      <form method="post">{% csrf_token %}
+        <h4>Supprimer définitivement le rdv N°{{ event_id }} du {{now|date}} ?</h4>
+        
+        <a href="{% url 'nurse:del_event' year month day hour_rdv event_id %}">
+        <input type="submit" value="Oui" class="btn btn-warning"></a>
+        <a class="btn btn-light" href="{% url 'nurse:edit_event' year month day hour_rdv event_id %}"> Annuler </a>
+
+      </form>
+    </div>
+  {% endif %}
+
+{% endblock del_event %}

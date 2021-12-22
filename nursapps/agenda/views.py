@@ -280,6 +280,7 @@ def create_events(request, year, month, day, hour, event_id=None):
 
 def delete_event(request, year, month, day, hour, event_id):
     """Delete event."""
+    now = datetime.now()
     hour_, minute_ = (int(i) for i in hour.split(":"))
     hour_rdv = str(hour)
     activ = Event.objects.filter(id__iregex=r"^%s$" % event_id)
@@ -303,8 +304,9 @@ def delete_event(request, year, month, day, hour, event_id):
 
         return HttpResponseRedirect(
             reverse(
-                "agenda:agendadujour",
+                "nurse:daily_agenda",
                 kwargs={"year": year, "month": month, "day": day},
+                # args=[]
             )
         )
     return render(
@@ -317,6 +319,9 @@ def delete_event(request, year, month, day, hour, event_id):
             "month": month,
             "day": day,
             "activ": activ,
+            "current_month": now.month,
+            "current_year": now.year,
+            "now": now,
         },
     )
 

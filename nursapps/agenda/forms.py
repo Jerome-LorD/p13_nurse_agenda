@@ -58,6 +58,7 @@ class formEvent(forms.ModelForm):
             "date": DateInput(
                 attrs={
                     "type": "datetime-local",
+                    "class": "form-control",
                 },
             )
         }
@@ -78,7 +79,7 @@ class formEvent(forms.ModelForm):
         max_length=100,
         widget=forms.TextInput(
             attrs={
-                "class": "input-field",
+                "class": "form-control",
                 "placeholder": "Nom",
                 "label for": "bobrech",
                 "id": "bobrech",
@@ -91,7 +92,7 @@ class formEvent(forms.ModelForm):
         max_length=100,
         widget=forms.TextInput(
             attrs={
-                "class": "input-field",
+                "class": "form-control",
                 "placeholder": "Adresse",
                 "label for": "bobrech",
                 "id": "bobrech",
@@ -103,14 +104,19 @@ class formEvent(forms.ModelForm):
     cares = forms.MultipleChoiceField(
         choices=CHOIX_SOINS,
         label="",
-        widget=forms.SelectMultiple(attrs={"class": "choices"}),
+        widget=forms.SelectMultiple(
+            attrs={
+                "class": "custom-select",
+                "size": "14",
+            }
+        ),
     )
 
     total_visit_per_day = forms.CharField(
         max_length=2,
         widget=forms.TextInput(
             attrs={
-                "class": "input-field",
+                "class": "form-control",
                 "placeholder": "nombre de visites / jour : le mardi à 10h et 16h (2 visites)",
                 "label for": "bobrech",
                 "id": "bobrech",
@@ -123,7 +129,7 @@ class formEvent(forms.ModelForm):
         max_length=2,
         widget=forms.TextInput(
             attrs={
-                "class": "input-field",
+                "class": "form-control",
                 "placeholder": "delta en heure entre 2 passages. Ex. 2 [toutes les 2 heures]",
                 "label for": "bobrech",
                 "id": "bobrech",
@@ -136,7 +142,7 @@ class formEvent(forms.ModelForm):
         max_length=2,
         widget=forms.TextInput(
             attrs={
-                "class": "input-field",
+                "class": "form-control",
                 "placeholder": "répétition tout les x jours",
                 "label for": "bobrech",
                 "id": "bobrech",
@@ -149,7 +155,7 @@ class formEvent(forms.ModelForm):
         max_length=2,
         widget=forms.TextInput(
             attrs={
-                "class": "input-field",
+                "class": "form-control",
                 "placeholder": "nombre de jours",
                 "label for": "bobrech",
                 "id": "bobrech",
@@ -160,7 +166,12 @@ class formEvent(forms.ModelForm):
     )
     day_per_week = forms.MultipleChoiceField(
         required=False,
-        widget=forms.CheckboxSelectMultiple,
+        widget=forms.CheckboxSelectMultiple(
+            attrs={
+                "class": "form form-check",
+            }
+        ),
+        label="Sélectionnez les jours pour créer une récurrence",
         choices=DAYS_CHOICES,
     )
 

@@ -31,7 +31,7 @@
         <ul>
             <li>vous pouvez le sélectionner et faire la demande d'association de votre compte à son propriétaire.</li>
 
-            <form method="post" class="user" action="{% url 'askfor' %}">
+            <form method="post" class="user" action="{% url 'cabinet:askfor' %}">
                 {% csrf_token %}
                 {{ ask_form.as_ul }}
                 <input type="submit" class="btn btn-primary col-md-2" value="Envoyer la demande">
