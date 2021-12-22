@@ -21,7 +21,7 @@ class SeleniumTests(StaticLiveServerTestCase):
         """Set up class."""
         super().setUpClass()
         options = Options()
-        options.binary_location = r"C:\Program Files\Mozilla Firefox\firefox.exe"
+        # options.binary_location = r"C:\Program Files\Mozilla Firefox\firefox.exe"
 
         options.headless = True
         cls.browser = webdriver.Firefox(options=options)
