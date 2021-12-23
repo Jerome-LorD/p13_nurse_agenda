@@ -17,7 +17,13 @@ before_script:
 services:
   - postgresql
 
-env: DJANGO_SETTINGS_MODULE="app.settings"
+addons:
+  firefox: latest
+
+env:
+  global:
+    - MOZ_HEADLESS=1
+    - DJANGO_SETTINGS_MODULE="app.settings"
 
 script:
   - python manage.py test

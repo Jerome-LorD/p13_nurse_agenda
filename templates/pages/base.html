@@ -159,7 +159,8 @@
 
             <!-- Main Content -->
             <div id="content">
-
+                <!-- Begin Page Content -->
+                <div class="container-fluid">
                     
                     
                 {% if user.is_authenticated %}
@@ -352,11 +353,6 @@
                         </ul>
 
                     </nav>
-
-
-                <!-- Begin Page Content -->
-                <div class="container-fluid">
-
                     {% endblock topbar %}
                     {% block profile %}{% endblock profile %} 
                     {% block original-content %}{% endblock original-content %}
