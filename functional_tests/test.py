@@ -15,9 +15,8 @@ class SeleniumTests(StaticLiveServerTestCase):
         """Set up class."""
         super().setUpClass()
         options = Options()
-        # options.add_argument("-headless")
+        options.add_argument("-headless")
 
-        options.headless = True
         cls.browser = webdriver.Firefox(options=options)
         cls.browser.implicitly_wait(2)
         cls.timeout = 5
