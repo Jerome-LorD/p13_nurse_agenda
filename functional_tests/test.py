@@ -1,13 +1,7 @@
 """Selenium test module."""
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium import webdriver
-from selenium.webdriver.firefox.webdriver import WebDriver
-from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver import FirefoxOptions
+from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.firefox.options import Options
 
 
@@ -21,10 +15,10 @@ class SeleniumTests(StaticLiveServerTestCase):
         """Set up class."""
         super().setUpClass()
         options = Options()
-        # options.binary_location = r"C:\Program Files\Mozilla Firefox\firefox.exe"
+        service = Service(executable_path="/geckodriver/geckodriver")
 
         options.headless = True
-        cls.browser = webdriver.Firefox(options=options)
+        cls.browser = webdriver.Firefox(service=service)
         cls.browser.implicitly_wait(2)
         cls.timeout = 5
 
