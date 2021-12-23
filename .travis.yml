@@ -1,13 +1,15 @@
 language: python
 os: linux
-dist: focal
+dist: xenial
+
 python:
   - '3.9'
 
 before_install:
+  # - sudo apt-get install xvfb
   - wget https://github.com/mozilla/geckodriver/releases/download/v0.30.0/geckodriver-v0.30.0-linux64.tar.gz
-  - tar -xzf geckodriver-v0.30.0-linux64.tar.gz
-  - sudo mv geckodriver /usr/local/bin/
+  - tar -xzf geckodriver-v0.30.0-linux64.tar.gz -C /usr/local/bin/
+  - sudo chmod a+x /usr/local/bin/geckodriver
 
 before_script:
   - psql -c 'create database travis_ci_test;' -U postgres
@@ -15,6 +17,7 @@ before_script:
 
 services:
   - postgresql
+  # - xvfb
 
 addons:
   firefox: latest
