@@ -15,7 +15,7 @@ class SeleniumTests(StaticLiveServerTestCase):
         """Set up class."""
         super().setUpClass()
         options = Options()
-        service = Service(executable_path="/geckodriver/geckodriver")
+        service = Service(executable_path="/geckodriver")
 
         options.headless = True
         cls.browser = webdriver.Firefox(service=service)
