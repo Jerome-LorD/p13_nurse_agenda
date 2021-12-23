@@ -1,6 +1,6 @@
 language: python
 os: linux
-dist: xenial
+dist: focal
 python:
   - '3.9'
 

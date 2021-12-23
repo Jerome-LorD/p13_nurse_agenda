@@ -39,7 +39,7 @@ class SeleniumTests(StaticLiveServerTestCase):
         self.browser.find_element_by_xpath('//button[@value="Log-in"]').click()
         self.assertIn("IDE Agenda -- Mon compte", self.browser.title)
 
-    def test_research_substitutes_as_logged_user(self):
+    def test_login_and_logout(self):
         """Test research substitutes as logged user."""
         self.browser.get("%s%s" % (self.live_server_url, "/auth/accounts/login/"))
 
