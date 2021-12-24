@@ -177,4 +177,4 @@ LOGIN_REDIRECT_URL = "registration/profile.html"
 
 LOGIN_URL = "/auth/accounts/login"
 
-django_heroku.settings(locals())
+django_heroku.settings(locals(), test_runner=False)
