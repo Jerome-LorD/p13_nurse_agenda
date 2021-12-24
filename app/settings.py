@@ -13,10 +13,10 @@ import os
 import psycopg2.extensions
 import sentry_sdk
 
-if "/app" in os.environ["HOME"]:
-    import django_heroku
+# if "/app" in os.environ["HOME"]:
+#     import django_heroku
 
-    django_heroku.settings(locals())
+#     django_heroku.settings(locals())
 
 
 from sentry_sdk.integrations.django import DjangoIntegration
@@ -182,3 +182,7 @@ LOGIN_REDIRECT_URL = "registration/profile.html"
 LOGIN_URL = "/auth/accounts/login"
 
 # django_heroku.settings(locals(), test_runner=False)
+if "/app" in os.environ["HOME"]:
+    import django_heroku
+
+    django_heroku.settings(locals())
