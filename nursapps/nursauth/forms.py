@@ -73,7 +73,6 @@ class NewLoginForm(auth_forms.UserCreationForm):
         max_length=200,
         widget=forms.EmailInput(
             attrs={
-                "name": "email",
                 "class": "form-control form-control-user",
                 "placeholder": "Email",
             }

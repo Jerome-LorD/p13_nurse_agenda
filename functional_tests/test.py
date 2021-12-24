@@ -1,7 +1,6 @@
 """Selenium test module."""
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium import webdriver
-from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.firefox.options import Options
 
 
@@ -16,7 +15,6 @@ class SeleniumTests(StaticLiveServerTestCase):
         super().setUpClass()
         options = Options()
         options.add_argument("-headless")
-
         cls.browser = webdriver.Firefox(options=options)
         cls.browser.implicitly_wait(2)
         cls.timeout = 5
@@ -49,9 +47,14 @@ class SeleniumTests(StaticLiveServerTestCase):
         password_input = self.browser.find_element_by_name("password")
         password_input.send_keys("poufpouf")
         self.browser.find_element_by_xpath('//button[@value="Log-in"]').click()
+        self.assertIn("IDE Agenda -- Mon compte", self.browser.title)
 
         # and now, he wants to log out:
+        self.browser.find_element_by_id("drop-down").click()
+        self.browser.implicitly_wait(2)
         self.browser.find_element_by_id("Log-out").click()
+        self.browser.implicitly_wait(2)
+        self.browser.find_element_by_id("Logout").click()
         self.assertIn("IDE Agenda -- Login", self.browser.title)
 
     def test_index_title(self):
