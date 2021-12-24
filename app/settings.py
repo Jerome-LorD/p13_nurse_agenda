@@ -11,11 +11,15 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 import os
 import psycopg2.extensions
-import django_heroku
 import sentry_sdk
+
+if "/app" in os.environ["HOME"]:
+    import django_heroku
+
+    django_heroku.settings(locals())
+
+
 from sentry_sdk.integrations.django import DjangoIntegration
-
-
 from pathlib import Path
 from dotenv import load_dotenv, find_dotenv  # type: ignore
 
@@ -177,4 +181,4 @@ LOGIN_REDIRECT_URL = "registration/profile.html"
 
 LOGIN_URL = "/auth/accounts/login"
 
-# django_heroku.settings(locals())
+# django_heroku.settings(locals(), test_runner=False)
