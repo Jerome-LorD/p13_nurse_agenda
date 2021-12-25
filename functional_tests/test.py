@@ -1,7 +1,11 @@
 """Selenium test module."""
+import os
+
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.firefox.service import Service
+from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 
 
 class SeleniumTests(StaticLiveServerTestCase):
@@ -15,6 +19,13 @@ class SeleniumTests(StaticLiveServerTestCase):
         super().setUpClass()
         options = Options()
         options.add_argument("-headless")
+        service = Service(
+            executable_path=r"F:\DjangoProjets\p13_nurse_agenda\functional_tests\geckodriver.exe"
+        )
+        if os.name == "nt":
+            options.binary_location = r"C:\Program Files\Mozilla Firefox\firefox.exe"
+            cls.browser = webdriver.Firefox(service=service, options=options)
+
         cls.browser = webdriver.Firefox(options=options)
         cls.browser.implicitly_wait(2)
         cls.timeout = 5

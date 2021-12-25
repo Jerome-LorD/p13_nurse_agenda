@@ -2,6 +2,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import authenticate
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http.response import HttpResponseRedirect
 from django.urls import reverse
@@ -49,24 +50,29 @@ def login(request):
     """Login view."""
     now = datetime.now()
     if request.method == "POST":
-        login_form = NewLoginForm(request.POST)
+        form = NewLoginForm(request.POST)
         email = request.POST.get("email")
         password = request.POST.get("password")
         user = authenticate(request, email=email, password=password)
         if user:
             auth_login(request, user)
+            messages.add_message(request, messages.SUCCESS, "Vous êtes connecté !")
             return HttpResponseRedirect(
                 reverse(
                     "nursauth:profile",
                 )
             )
+        else:
+            messages.add_message(
+                request, messages.ERROR, "Les champs renseignés sont invalides."
+            )
     else:
-        login_form = NewLoginForm()
+        form = NewLoginForm()
     return render(
         request,
         "registration/login.html",
         {
-            "login_form": login_form,
+            "login_form": form,
             "current_month": now.month,
             "current_year": now.year,
         },

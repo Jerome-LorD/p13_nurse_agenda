@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from calendar import HTMLCalendar
 from nursapps.agenda.models import Event
 from django.template.defaultfilters import pluralize
+from nursapps.agenda.models import Associate
 
 
 class CalEvent(HTMLCalendar):
@@ -20,11 +21,16 @@ class CalEvent(HTMLCalendar):
 
     def formatday(self, day, activites):
         """Format day."""
+        associate = Associate.objects.filter(user_id=self.user.id).first()
+        associates = Associate.objects.get_associates(associate.id)
+        associates = [associate.id for associate in associates]
+
         event = Event.objects.filter(
             date__year=self.year,
             date__month=self.month,
             date__day=day,
-            user_id=self.user.id,
+            # user_id=self.user.id,
+            user_id__in=associates,
         )
         total_event_by_id = event.count()
 

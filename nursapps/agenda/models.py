@@ -76,22 +76,22 @@ def random_group_id():
     return str(random.randint(1000, 1000000000))
 
 
-def update_date_list(date_list, new_day=0, new_hour=0, new_minute=0):
-    """Update date list.
+# def updated_date(date_list, new_day=0, new_hour=0, new_minute=0) -> list:
+#     """Update date list.
 
-    Returns an updated list to handle the recursion per
-    week with a recursion during the day.
-    """
-    start_day = date_list[0].day
-    start_hour = date_list[0].hour
-    start_minute = date_list[0].minute
-    new_date_list = []
-    for date_in in date_list:
-        date_in += timedelta(days=new_day - start_day)
-        date_in += timedelta(hours=new_hour - start_hour)
-        date_in += timedelta(minutes=new_minute - start_minute)
-        new_date_list.append(date_in)
-    return new_date_list
+#     Returns an updated list to handle the recursion per
+#     week with a recursion during the day.
+#     """
+#     start_day = date_list[0].day
+#     start_hour = date_list[0].hour
+#     start_minute = date_list[0].minute
+#     new_date = []
+#     for date_in in date_list:
+#         date_in += timedelta(days=new_day - start_day)
+#         date_in += timedelta(hours=new_hour - start_hour)
+#         date_in += timedelta(minutes=new_minute - start_minute)
+#         new_date.append(date_in)
+#     return new_date
 
 
 class Event(models.Model):
@@ -133,6 +133,23 @@ class Event(models.Model):
             ),
         )
         return f"{url}"
+
+    @classmethod
+    def updated_date(cls, date_list, new_day=0, new_hour=0, new_minute=0) -> list:
+        """Return an updated list of date.
+
+        List to handle the recursion per week with a recursion during the day.
+        """
+        start_day = date_list[0].day
+        start_hour = date_list[0].hour
+        start_minute = date_list[0].minute
+        new_date = []
+        for date_in in date_list:
+            date_in += timedelta(days=new_day - start_day)
+            date_in += timedelta(hours=new_hour - start_hour)
+            date_in += timedelta(minutes=new_minute - start_minute)
+            new_date.append(date_in)
+        return new_date
 
     def create_events(self, user_id):
         """Create events."""
@@ -304,7 +321,7 @@ class Event(models.Model):
 
         dates_list = [event.date for event in group_event]
 
-        dates_list = update_date_list(
+        dates_list = self.updated_date(
             dates_list, self.date.day, self.date.hour, self.date.minute
         )
 
@@ -329,7 +346,7 @@ class Event(models.Model):
             and int(self.days_number) == 1
         ):
             print("upd 2")
-            breakpoint()
+            # breakpoint()
             # Update a unique day without recurency
             for event in group_event:
                 if self.date not in [i.date for i in events]:
