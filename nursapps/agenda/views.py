@@ -1,5 +1,6 @@
 """Agenda view module."""
 import datetime as dt
+from django.contrib.auth.models import User
 import numpy
 
 from django.http.response import HttpResponseRedirect
@@ -7,7 +8,7 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from nursapps.agenda.forms import formEvent
-from nursapps.agenda.models import Event
+from nursapps.agenda.models import Event, Associate
 from datetime import datetime, timedelta, date
 from django.utils.safestring import mark_safe
 
@@ -70,6 +71,12 @@ def agenda(request, year, month):
     user_date_joined = request.user.date_joined
     user_date_joined = datetime.strptime(str(user_date_joined)[:10], "%Y-%m-%d").date()
 
+    # associate = Associate.objects.filter(user_id=request.user.id).first()
+    # associates = Associate.objects.get_associates(associate.id)
+    # associates = [associate.id for associate in associates]
+
+    # breakpoint()
+
     pmb = prev_month_base(year, month, day=1)
     nmb = next_month_base(year, month, day=1)
     prev_month_n = prev_month_name(pmb)
@@ -95,6 +102,7 @@ def agenda(request, year, month):
             "user_id": user_id,
             "current_month": now.month,
             "current_year": now.year,
+            # "associates": associates,
         },
     )
 
