@@ -7,7 +7,7 @@ from django.http.response import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
-from nursapps.agenda.forms import formEvent
+from nursapps.agenda.forms import EditEventForm, formEvent
 from nursapps.agenda.models import Event, Associate
 from datetime import datetime, timedelta, date
 from django.utils.safestring import mark_safe
@@ -133,10 +133,16 @@ def home(request):
 
 @login_required
 def daily_agenda(request, year, month, day):
-    """Agenda jour."""
+    """Daily agenda."""
     print("-------------------------DANS AG JOUR--------------------------------------")
     now = datetime.now()
-    event = Event.objects.filter(user_id=request.user.id).first()
+    # event = Event.objects.filter(user_id=request.user.id).first()
+    associate = Associate.objects.filter(user_id=request.user.id).first()
+    if associate:
+        associates = Associate.objects.get_associates(associate.cabinet_id)
+        associates = [associate.id for associate in associates]
+    else:
+        associates = []
 
     if not is_valid_year_month_day(year, month, day):
         return HttpResponseRedirect(
@@ -152,22 +158,21 @@ def daily_agenda(request, year, month, day):
 
     user_id = request.user.id
     appointments_per_day = Event.objects.filter(
-        date__contains=dt.date(year, month, day)
+        date__contains=dt.date(
+            year,
+            month,
+            day,
+        ),
+        user_id__in=associates,
     )
 
     lapj = [
         appointment.date.strftime("%H:%M")
         for appointment in appointments_per_day
-        if request.user.id == appointment.user_id
+        if request.user.id == appointment.user_id or request.user.id in associates
     ]
 
-    nb_rdv_par_jour = Event.objects.filter(
-        date__contains=dt.date(year, month, day)
-    ).count()
-
     nom_du_jour = datetime.strftime(date(year, month, day), "%A")
-    heure_courante = datetime.strftime(datetime.now(), "%H:%M")
-    hcourante = datetime.strftime(datetime.now(), "%H%M")[:-1]
     heure_unik = datetime.strftime(datetime.now(), "%H")
 
     nextday = next_day(year, month, day)
@@ -184,12 +189,10 @@ def daily_agenda(request, year, month, day):
         "lapj": lapj,
         "uid": user_id,
         "nom_du_jour": nom_du_jour,
-        "hcour": heure_courante,
         "hunik": heure_unik,
-        "hcou": hcourante,
-        "nb_rdv": nb_rdv_par_jour,
         "current_month": now.month,
         "current_year": now.year,
+        "associates": associates,
     }
 
     return render(request, "pages/daily_agenda_details.html", context)
@@ -336,7 +339,13 @@ def delete_event(request, year, month, day, hour, event_id):
 
 def edit_event(request, year, month, day, hour, event_id):
     """Edit event."""
+    print("DANS EDIT EVENT")
     now = datetime.now()
+
+    associate = Associate.objects.filter(user_id=request.user.id).first()
+    associates = Associate.objects.get_associates(associate.cabinet_id)
+    associates = [associate.id for associate in associates]
+
     # TODO:
     hour_rdv = str(hour)
     hours = [str(timedelta(hours=hour))[:-3] for hour in numpy.arange(6, 23, 0.25)]
@@ -355,8 +364,7 @@ def edit_event(request, year, month, day, hour, event_id):
     hour_, minute_ = (int(i) for i in hour.split(":"))
 
     # day_per_week = event.day_per_week.split(", ")
-
-    form = formEvent(
+    form = EditEventForm(
         request.POST or None,
         instance=event,
         initial={
@@ -371,13 +379,9 @@ def edit_event(request, year, month, day, hour, event_id):
             ),
         },
     )
-    # editable_forms = {
-    #     "formdate": form["date"].value(),
-    #     "formname": form["name"].value(),
-    #     "formcares": form["cares"].value(),
-    # }
+    edit_choice = request.POST.get("choice_event_edit")
     if request.POST and form.is_valid():
-        already = event.update_events(group_event)
+        already = event.update_events(group_event, edit_choice)
         if not already:
             return HttpResponseRedirect(
                 reverse(
@@ -386,20 +390,30 @@ def edit_event(request, year, month, day, hour, event_id):
                 )
             )
         else:
-            request.session["already_took"] = True
-            request.session["booked_time"] = f"{hour_}:{minute_}"
-            return HttpResponseRedirect(
-                reverse(
-                    "nurse:edit_event",
-                    kwargs={
-                        "year": year,
-                        "month": month,
-                        "day": day,
-                        "hour": hour,
-                        "event_id": event_id,
-                    },
+            # edit_choice = form["choice_event_edit"].value()
+            already = event.update_events(group_event, edit_choice)
+            if not already:
+                return HttpResponseRedirect(
+                    reverse(
+                        "nurse:daily_agenda",
+                        kwargs={"year": year, "month": month, "day": day},
+                    )
                 )
-            )
+            else:
+                # request.session["already_took"] = True
+                # request.session["booked_time"] = f"{hour_}:{minute_}"
+                return HttpResponseRedirect(
+                    reverse(
+                        "nurse:edit_event",
+                        kwargs={
+                            "year": year,
+                            "month": month,
+                            "day": day,
+                            "hour": hour,
+                            "event_id": event_id,
+                        },
+                    )
+                )
     return render(
         request,
         "pages/event.html",
@@ -415,8 +429,8 @@ def edit_event(request, year, month, day, hour, event_id):
             "events": day_events,
             "lst_hours": hours,
             "event": event,
-            # "selected_date": editable_forms["formdate"][-5:],
             "current_month": now.month,
             "current_year": now.year,
+            "associates": associates,
         },
     )

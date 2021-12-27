@@ -5,12 +5,7 @@ from django.forms import DateInput
 from nursapps.agenda.models import Event
 
 
-DATE_ERROR_MESSAGE = {
-    "required": "This field is required",
-    "invalid": "Enter a valid value",
-}
-
-CHOIX_SOINS = [
+CARES_CHOICES = [
     ("AC", "Anti-coagulant"),
     ("ALIM", "Alimentation"),
     ("BS", "Bilan sanguin"),
@@ -35,6 +30,12 @@ DAYS_CHOICES = [
     (4, "Vendredi"),
     (5, "Samedi"),
     (6, "Dimanche"),
+]
+
+EVENT_CHOICES = [
+    ("thisone", "Ce jour seulement "),
+    ("thisone_after", "Ce jour et les suivants "),
+    ("allevent", "Tout le groupe d'évenement "),
 ]
 
 
@@ -71,7 +72,7 @@ class formEvent(forms.ModelForm):
             "total_visit_per_day",
             "delta_visit_per_hour",
             "delta_visit_per_day",
-            "days_number",
+            "number_of_days",
             "day_per_week",
         ]
 
@@ -102,7 +103,7 @@ class formEvent(forms.ModelForm):
         required=True,
     )
     cares = forms.MultipleChoiceField(
-        choices=CHOIX_SOINS,
+        choices=CARES_CHOICES,
         label="",
         widget=forms.SelectMultiple(
             attrs={
@@ -151,24 +152,24 @@ class formEvent(forms.ModelForm):
         label="répétition tous les x jours",
         required=False,
     )
-    days_number = forms.CharField(
+    number_of_days = forms.CharField(
         max_length=2,
         widget=forms.TextInput(
             attrs={
                 "class": "form-control",
-                "placeholder": "nombre de jours",
+                "placeholder": "nombre total de visites",
                 "label for": "bobrech",
                 "id": "bobrech",
             }
         ),
-        label="nombre de jours",
+        label="Nombre total de visites incluant les répétitions au cours d'une journée",
         required=False,
     )
     day_per_week = forms.MultipleChoiceField(
         required=False,
         widget=forms.CheckboxSelectMultiple(
             attrs={
-                "class": "form form-check",
+                "class": "form-check",
             }
         ),
         label="Sélectionnez les jours pour créer une récurrence",
@@ -186,3 +187,18 @@ class formEvent(forms.ModelForm):
         day_per_week = self.cleaned_data["day_per_week"]
         day_per_week = ", ".join(day_per_week)
         return day_per_week
+
+
+class EditEventForm(formEvent):
+    """Edit event form."""
+
+    choice_event_edit = forms.ChoiceField(
+        required=True,
+        widget=forms.RadioSelect(
+            attrs={
+                "class": "form-check-input",
+            }
+        ),
+        label="Sélectionnez quel évenement modifier",
+        choices=EVENT_CHOICES,
+    )

@@ -2,20 +2,20 @@
 
 {% block priserdv %}
 	{# If the user tries to modify an event in the url which belongs to another user, we prevent him and invite him to go to the previous page. #}
-	{% if int_event_id in events or not event_id %} 
+	{% comment %} {% if int_event_id in events or not event_id %}  {% endcomment %}
+	{% if request.user.id in associates or not event_id %}
 		{% if hour_rdv in lst_hours %}
 			{% if warn == True %}
 				Attention, cette action ne sera pas enregistrée.
 			{% endif %}
 			{% if request.session.already_took and hour_rdv != booked_time %} 
-				{{ booked_time }} est déjà réservé.
+				{{ booked_time }} est déjà réservé. {{ request.session.already_took }}
 			{% endif %}
 			<form method="post" class="formrdv">
 				<fieldset style="width:50%; margin:0 auto;">
 				{% csrf_token %}
-				<ul class="form">
-					{{ form.as_ul }}
-				</ul>
+
+				{{ form }}
 
 					<a class="right btn btn-light" href="{% url 'nurse:daily_agenda' year month day %}"> Annuler </a>
 					<!-- <button type="submit" class="sub-neo right"> Enregistrer </button> -->

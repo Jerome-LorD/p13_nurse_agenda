@@ -22,14 +22,16 @@ class CalEvent(HTMLCalendar):
     def formatday(self, day, activites):
         """Format day."""
         associate = Associate.objects.filter(user_id=self.user.id).first()
-        associates = Associate.objects.get_associates(associate.id)
-        associates = [associate.id for associate in associates]
+        if associate:
+            associates = Associate.objects.get_associates(associate.cabinet_id)
+            associates = [associate.id for associate in associates]
+        else:
+            associates = []
 
         event = Event.objects.filter(
             date__year=self.year,
             date__month=self.month,
             date__day=day,
-            # user_id=self.user.id,
             user_id__in=associates,
         )
         total_event_by_id = event.count()
