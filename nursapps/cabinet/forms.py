@@ -51,7 +51,7 @@ class SearchForCabinet(forms.Form):
 class AssociationValidation(forms.Form):
     """New valid form."""
 
-    CHOICES = [("associate", "Associate"), ("replacment", "Replacment")]
+    CHOICES = [("associate", "Associé(e)"), ("replacment", "Remplacant(e)")]
 
     confirm = forms.CharField(
         label="",

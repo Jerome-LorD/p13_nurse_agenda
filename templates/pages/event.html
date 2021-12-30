@@ -2,7 +2,6 @@
 
 {% block priserdv %}
 	{# If the user tries to modify an event in the url which belongs to another user, we prevent him and invite him to go to the previous page. #}
-	{% comment %} {% if int_event_id in events or not event_id %}  {% endcomment %}
 	{% if request.user.id in associates or not event_id %}
 		{% if hour_rdv in lst_hours %}
 			{% if warn == True %}
@@ -12,42 +11,52 @@
 				{{ booked_time }} est déjà réservé. {{ request.session.already_took }}
 			{% endif %}
 			<form method="post" class="formrdv">
-				<fieldset style="width:50%; margin:0 auto;">
+				<fieldset style="width:50%; margin:0 auto; padding: 0 0 7em 0;">
 				{% csrf_token %}
-
-				{{ form }}
-
-					<a class="right btn btn-light" href="{% url 'nurse:daily_agenda' year month day %}"> Annuler </a>
-					<!-- <button type="submit" class="sub-neo right"> Enregistrer </button> -->
-					<input type="submit" class="right btn btn-success" name="" value="Enregistrer">
+				{{ form.as_p }}
 				</fieldset>	
-			</form>
+				<div id="grp-btn">
+					<div id="save">
+						{% if event_id %}
+							<h4>Éditer la visite N°{{ event_id }} </h4>
+							<a class="right btn btn-light" href="{% url 'nurse:daily_agenda' year month day %}"> Annuler </a>
+							<input type="submit" class="right btn btn-success" name="" value="Enregistrer">
+						{% else %}
+							<a class="right btn btn-light" href="{% url 'nurse:daily_agenda' year month day %}"> Annuler </a>
+							<input type="submit" class="right btn btn-success" name="" value="Enregistrer">				
+						{% endif %}
+					</div>
+				</div>	
+			</form>	
+			{% if event_id %}
+				<div id="delete">
+					<h4>Supprimer la visite N°{{ event_id }} </h4>
+						<a class="btn" href="{% url 'nurse:del_event' year month day hour_rdv event_id %}"> 
+						<input type="submit" value="Supprimer" class="btn btn-warning">
+						</a>
+				</div>
+			{% endif %}
+
 		{% else %}
 			<div style="color: #ff7171; font-size:1.1em; padding: 5px 5px;">
 			Oups ! Vous ne pouvez pas faire ce genre de modifications.<br> 
 			</div><input type=button value="Revenir sur la page précédente" onClick="javascript:history.go(-1);">
 		{% endif %}
-		<br>
 
-		{% if event_id is not None %}
-			<h4>Supprimer la visite N°{{ event_id }} </h4>
-				<a class="btn" href="{% url 'nurse:del_event' year month day hour_rdv event_id %}"> 
-				<input type="submit" value="Supprimer" class="btn btn-warning">
-				</a>
-		{% endif %}
-		<hr>
-		<h3>Usage</h3>
-		<ul>
-			<li>1. Entrez le nombre de visites par jour au total</li>
-			<li>2. Entrez de delta en heure entre chaque visite dans une journée</li>
-			<li>3. Entrez le delta en jour entre chaque visite</li>
-			<li>4. Entrez le nombre de jours</li>
-		</ul>
-		<p>Le principe est celui-ci :</p>
-		<p>Pour enregistrer une visite une fois par semaine tous les mercredi à 16h15 pendant 3 semaines, il faut
-			sélectionner le jour et l'heure puis préciser 1 visite par jour, laisser le champ delta en heure vide, 
-			entrer 7 comme delta en jour et 3 dans le nombre de jours.
-		</p>
+		<div class="usage">
+			<h3>Usage</h3>
+			<ul>
+				<li>1. Entrez le nombre de visites par jour au total</li>
+				<li>2. Entrez de delta en heure entre chaque visite dans une journée</li>
+				<li>3. Entrez le delta en jour entre chaque visite</li>
+				<li>4. Entrez le nombre de jours</li>
+			</ul>
+			<p>Le principe est celui-ci :</p>
+			<p>Pour enregistrer une visite une fois par semaine tous les mercredi à 16h15 pendant 3 semaines, il faut
+				sélectionner le jour et l'heure puis préciser 1 visite par jour, laisser le champ delta en heure vide, 
+				entrer 7 comme delta en jour et 3 dans le nombre de jours.
+			</p>
+		</div>
 
 	{% else %} 
 		Vous n'avez pas la possibilité d'éditer cette entrée. <input type=button value="Revenir sur la page précédente" onClick="javascript:history.go(-1);">   

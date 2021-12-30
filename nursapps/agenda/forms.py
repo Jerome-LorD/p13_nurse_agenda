@@ -33,9 +33,9 @@ DAYS_CHOICES = [
 ]
 
 EVENT_CHOICES = [
-    ("thisone", "Ce jour seulement "),
-    ("thisone_after", "Ce jour et les suivants "),
-    ("allevent", "Tout le groupe d'évenement "),
+    ("thisone", "Cet événement seulement "),
+    ("thisone_after", "Cet événement et les suivants "),
+    ("allevent", "Tout le groupe d'événement "),
 ]
 
 
@@ -131,7 +131,7 @@ class formEvent(forms.ModelForm):
         widget=forms.TextInput(
             attrs={
                 "class": "form-control",
-                "placeholder": "delta en heure entre 2 passages. Ex. 2 [toutes les 2 heures]",
+                "placeholder": "Écart en heure entre 2 passages. Ex. 6 [toutes les 6 heures]",
                 "label for": "bobrech",
                 "id": "bobrech",
             }
@@ -157,22 +157,22 @@ class formEvent(forms.ModelForm):
         widget=forms.TextInput(
             attrs={
                 "class": "form-control",
-                "placeholder": "nombre total de visites",
+                "placeholder": "Pendant tant de jours",
                 "label for": "bobrech",
                 "id": "bobrech",
             }
         ),
-        label="Nombre total de visites incluant les répétitions au cours d'une journée",
+        label="Nombre total de jours",
         required=False,
     )
     day_per_week = forms.MultipleChoiceField(
         required=False,
         widget=forms.CheckboxSelectMultiple(
             attrs={
-                "class": "form-check",
+                "class": "form-check day_per_week",
             }
         ),
-        label="Sélectionnez les jours pour créer une récurrence",
+        label="Sélectionnez les jours pour créer une récurrence hebdomadaire",
         choices=DAYS_CHOICES,
     )
 
@@ -189,6 +189,21 @@ class formEvent(forms.ModelForm):
         return day_per_week
 
 
+from django.forms import Select
+
+
+class Select(Select):
+    def create_option(self, *args, **kwargs):
+        option = super().create_option(*args, **kwargs)
+        if not option.get("value"):
+            option["attrs"]["disabled"] = "disabled"
+
+        if option.get("value") == 2:
+            option["attrs"]["disabled"] = "disabled"
+        breakpoint()
+        return option
+
+
 class EditEventForm(formEvent):
     """Edit event form."""
 
@@ -199,6 +214,6 @@ class EditEventForm(formEvent):
                 "class": "form-check-input",
             }
         ),
-        label="Sélectionnez quel évenement modifier",
+        label="Sélectionnez quel événement modifier",
         choices=EVENT_CHOICES,
     )

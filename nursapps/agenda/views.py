@@ -12,6 +12,7 @@ from nursapps.agenda.models import Event, Associate
 from datetime import datetime, timedelta, date
 from django.utils.safestring import mark_safe
 
+
 from nursapps.agenda.utils import (
     CalEvent,
     is_valid_year_month,
@@ -61,7 +62,7 @@ def agenda(request, year, month):
     if not is_valid_year_month(year, month):
         return HttpResponseRedirect(
             reverse(
-                "agenda:main_agenda",
+                "nurse:main_agenda",
                 args=[str(now.year), str(now.month)],
             )
         )
@@ -134,7 +135,13 @@ def home(request):
 @login_required
 def daily_agenda(request, year, month, day):
     """Daily agenda."""
-    print("-------------------------DANS AG JOUR--------------------------------------")
+    print("-------------------------DANS AG JOUR-----------------------------------")
+    if not request.user.is_cabinet_owner:
+        return HttpResponseRedirect(
+            reverse(
+                "nursauth:profile",
+            )
+        )
     now = datetime.now()
     # event = Event.objects.filter(user_id=request.user.id).first()
     associate = Associate.objects.filter(user_id=request.user.id).first()
@@ -178,6 +185,8 @@ def daily_agenda(request, year, month, day):
     nextday = next_day(year, month, day)
     prevday = prev_day(year, month, day)
 
+    # breakpoint()
+
     context = {
         "year": year,
         "month": month,
@@ -193,6 +202,7 @@ def daily_agenda(request, year, month, day):
         "current_month": now.month,
         "current_year": now.year,
         "associates": associates,
+        "cabinet": associate.cabinet.name,
     }
 
     return render(request, "pages/daily_agenda_details.html", context)
@@ -210,7 +220,7 @@ def create_events(request, year, month, day, hour, event_id=None):
         now = datetime.now()
         return HttpResponseRedirect(
             reverse(
-                "agenda:agenda_neo_rdv",
+                "nurse:agenda_neo_rdv",
                 kwargs={
                     "year": now.year,
                     "month": now.month,
@@ -254,7 +264,6 @@ def create_events(request, year, month, day, hour, event_id=None):
 
         if str(event.date)[11:16] in hours:
             event.create_events(user_id=request.user.id)
-
             return HttpResponseRedirect(
                 reverse(
                     "nurse:daily_agenda",
@@ -299,15 +308,7 @@ def delete_event(request, year, month, day, hour, event_id):
     group_event = Event.objects.filter(group_id=event.group_id)
 
     if request.method == "POST":
-        # TODO: add possibility to delete the event_id only. Not the entire group.
-        # if del_only_a_day: boolean from checkbox.
-        # If the checkbox is checked, del_only_a_day = True
-        # if del_only_a_day:
-        #     event.delete()
         for event in group_event:
-            # TODO: delete only the events of the day during consultation with the
-            # events planned after and which are part of the group_event.
-            # Do not delete events before this date!
             if event.date >= dt.datetime(
                 int(year), int(month), int(day), hour_, minute_
             ):
@@ -317,7 +318,6 @@ def delete_event(request, year, month, day, hour, event_id):
             reverse(
                 "nurse:daily_agenda",
                 kwargs={"year": year, "month": month, "day": day},
-                # args=[]
             )
         )
     return render(
@@ -346,11 +346,18 @@ def edit_event(request, year, month, day, hour, event_id):
     associates = Associate.objects.get_associates(associate.cabinet_id)
     associates = [associate.id for associate in associates]
 
-    # TODO:
     hour_rdv = str(hour)
     hours = [str(timedelta(hours=hour))[:-3] for hour in numpy.arange(6, 23, 0.25)]
     # adding a zero before single digit:
     hours = [str(datetime.strptime(i, "%H:%M").time())[:5] for i in hours]
+
+    if not is_valid_year_month_day(year, month, day):
+        return HttpResponseRedirect(
+            reverse(
+                "nurse:edit_event",
+                args=[str(now.year), str(now.month), str(now.day), hour, event_id],
+            )
+        )
 
     date_of_the_day = datetime(int(year), int(month), int(day)).strftime("%Y-%m-%d")
     event_per_day = Event.objects.filter(
@@ -363,7 +370,6 @@ def edit_event(request, year, month, day, hour, event_id):
     day_events = [event.id for event in event_per_day]
     hour_, minute_ = (int(i) for i in hour.split(":"))
 
-    # day_per_week = event.day_per_week.split(", ")
     form = EditEventForm(
         request.POST or None,
         instance=event,
@@ -379,7 +385,11 @@ def edit_event(request, year, month, day, hour, event_id):
             ),
         },
     )
+
+    if len(group_event) == 1:
+        edit_choice = "thisone"  # To prevent list index out of range with other choices
     edit_choice = request.POST.get("choice_event_edit")
+
     if request.POST and form.is_valid():
         already = event.update_events(group_event, edit_choice)
         if not already:
@@ -390,7 +400,6 @@ def edit_event(request, year, month, day, hour, event_id):
                 )
             )
         else:
-            # edit_choice = form["choice_event_edit"].value()
             already = event.update_events(group_event, edit_choice)
             if not already:
                 return HttpResponseRedirect(

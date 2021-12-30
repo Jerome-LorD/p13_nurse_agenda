@@ -33,17 +33,17 @@ def autocomplete(request):
 
 def create_new_cabinet(request):
     """Create new cabinet."""
-    first_name = request.user.username
-    cabin = None
+    # first_name = request.user.username
+    # cabin = None
     sender = None
     new_cabinet = None
     associate = None
-    lst_associates_id = None
+    # lst_associates_id = None
     cab_id = None
     cab_name = None
     association_request = RequestAssociate.objects.filter(receiver_id=request.user.id)
     assreq = association_request.values_list("sender_id", flat=True)
-    sender_request = RequestAssociate.objects.filter(sender_id=request.user.id)
+    RequestAssociate.objects.filter(sender_id=request.user.id)
 
     if assreq:
         sender = User.objects.filter(pk__in=[i for i in assreq])
@@ -57,34 +57,35 @@ def create_new_cabinet(request):
         cabinet = Cabinet.objects.filter(pk=cab_id).first()
         cab_name = cabinet.name
 
-    cabinet_form = CreateCabinet(request.POST)
+    form = CreateCabinet(request.POST)
     if request.method == "POST":
         cabinet = request.POST.get("cabinet")
-        try:
-            cabin = Cabinet.objects.get(name=cabinet)
-            if not request.user.is_cabinet_owner:
-                return HttpResponseRedirect(reverse("cabinet:askfor"))
-            return HttpResponseRedirect(
-                reverse(
-                    "nursauth:profile",
+        if form.is_valid():
+            try:
+                cabin = Cabinet.objects.get(name=cabinet)
+                if not request.user.is_cabinet_owner:
+                    return HttpResponseRedirect(reverse("cabinet:askfor"))
+                return HttpResponseRedirect(
+                    reverse(
+                        "nursauth:profile",
+                    )
                 )
-            )
-        except Cabinet.DoesNotExist:
-            cabinet = Cabinet.objects.create(name=cabinet)
-            request.user.is_cabinet_owner = True
-            request.user.save()
-            associate = Associate.objects.create(
-                cabinet_id=cabinet.id, user_id=request.user.id
-            )
-            new_cabinet = cabinet.name
-            return HttpResponseRedirect(
-                reverse(
-                    "nursauth:profile",
+            except Cabinet.DoesNotExist:
+                cabinet = Cabinet.objects.create(name=cabinet)
+                request.user.is_cabinet_owner = True
+                request.user.save()
+                associate = Associate.objects.create(
+                    cabinet_id=cabinet.id, user_id=request.user.id
                 )
-            )
+                new_cabinet = cabinet.name
+                return HttpResponseRedirect(
+                    reverse(
+                        "nursauth:profile",
+                    )
+                )
 
     context = {
-        "cab_form": cabinet_form,
+        "cab_form": form,
         "cab": associate,
         "cabinet": cabinet,
         "sender": sender,
@@ -99,28 +100,30 @@ def create_new_cabinet(request):
 def ask_for_associate(request):
     """Ask for a partner."""
     if request.method == "POST":
-        ask_form = SearchForCabinet(request.POST)
-        askfor = request.POST.get("search_for_cabinet")
-        cabinet = Cabinet.objects.filter(name=askfor)
-        cabinet = cabinet.first()
-        cabass = Associate.objects.filter(cabinet_id=cabinet.id).first()
-        obj, _ = RequestAssociate.objects.get_or_create(
-            sender_id=request.user.id,
-            receiver_id=cabass.user_id,
-            cabinet_id=cabass.cabinet_id,
-        )
-        return HttpResponseRedirect(
-            reverse(
-                "nursauth:profile",
+        form = SearchForCabinet(request.POST)
+        if form.is_valid():
+            askfor = request.POST.get("search_for_cabinet")
+            cabinet = Cabinet.objects.filter(name=askfor)
+            cabinet = cabinet.first()
+            cabass = Associate.objects.filter(cabinet_id=cabinet.id).first()
+            obj, _ = RequestAssociate.objects.get_or_create(
+                sender_id=request.user.id,
+                receiver_id=cabass.user_id,
+                cabinet_id=cabass.cabinet_id,
             )
-        )
+            return HttpResponseRedirect(
+                reverse(
+                    "nursauth:profile",
+                )
+            )
     else:
-        ask_form = SearchForCabinet()
+        form = SearchForCabinet()
+
     return render(
         request,
         "registration/askfor.html",
         {
-            "ask_form": ask_form,
+            "form": form,
             "current_month": now.month,
             "current_year": now.year,
         },

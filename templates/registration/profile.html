@@ -33,10 +33,23 @@
                 </div>
 
                 {% if not request.user.is_cabinet_owner and not reqass and not request.user in associates %}
-                    Création d'un cabinet :<br>Saisissez le nom de votre cabinet, s'il apparait dans l'autocomplete c'est qu'il existe déjà et vous 
-                    devez faire une demande à son propriétaire.<br>Sinon, vous pouvez le créer.
+                    
+                    <h3>Création ou affiliation à un cabinet</h3>
+                    <p>C'est à partir du nom de votre cabinet que vous pourrez partager vos événements commun (et utiliser l'application).<br>
+                    Créer des événements sans ce nom de cabinet n'est pas possible.
+                    <br>
+                    Le nom de cabinet est un simple identifiant sur le site et vous pouvez l'intituler comme vous le souhaitez tant qu'il est unique 
+                    (il ne doit pas exister dans la base de données).</p>
+                    <p>Vous pourrez savoir si l'intitulé de cabinet est disponible en utilisant le formulaire ci-s=dessous. Si le nom apparait et que c'est le cabinet
+                    que vous voulez créer, vous pouvez faire une demande d'association à son créateur qui en sera notifié. Il devra alors valider la demande et 
+                    votre accès sera complet, vous aurez accès à la créations d'évenements dans le cadre d'un planning partagé.</p>
 
-                    <form method="post" action="{% url 'cabinet:create' %}"> <!-- -->
+
+
+                    <p>Saisissez le nom de votre cabinet, s'il apparait dans l'autocomplete c'est qu'il existe déjà et vous 
+                    devez faire une demande à son propriétaire.<br>Sinon, vous pouvez le créer.</p>
+
+                    <form method="post" action="{% url 'cabinet:create' %}">
                         {% csrf_token %}
                         {{ cab_form.as_ul }}<br><br><br>
                         <input type="submit" value="Submit">
@@ -104,7 +117,7 @@
                 {% endif %}
             </div>
         </div>
-    
+    </div>  
 {% endblock %}
 
 

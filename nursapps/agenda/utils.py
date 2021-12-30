@@ -40,20 +40,20 @@ class CalEvent(HTMLCalendar):
         month_ = datetime.today().strftime("%m")
         if day != 0 and day != int(day_):
             if total_event_by_id == 0:
-                return f"<td><a href='{day}'><span class='date'>{day}</span>  </a></td>"
+                return f"<td><a href='{day}' class='text-decoration-none'><span class='date'>{day}</span>  </a></td>"
             else:
-                return f"<td><a href='{day}'><span class='date'>{day}</span><span class='nb_rdv'>{total_event_by_id} visite{pluralize(total_event_by_id)}</span></a></td>"
+                return f"<td><a href='{day}' class='text-decoration-none'><span class='date'>{day}</span><span class='nb_rdv'>{total_event_by_id} visite{pluralize(total_event_by_id)}</span></a></td>"
         elif day != 0 and day == int(day_) and self.month == int(month_):
             return (
-                f"<td class='date-today'><a href='{day}'><span class='date'>{day}</span><span class='nb_rdv'> {total_event_by_id} visite{pluralize(total_event_by_id)}</span></a></td>"
+                f"<td class='date-today'><a href='{day}' class='text-decoration-none'><span class='date'>{day}</span><span class='nb_rdv'> {total_event_by_id} visite{pluralize(total_event_by_id)}</span></a></td>"
                 if total_event_by_id > 0
-                else f"<td class='date-today'><a href='{day}'><span class='date'>{day}</span><span class='nb_rdv'> </span></a></td>"
+                else f"<td class='date-today'><a href='{day}' class='text-decoration-none'><span class='date'>{day}</span><span class='nb_rdv'> </span></a></td>"
             )
         elif day != 0 and self.month != int(month_):
             if total_event_by_id == 0:
                 return f"<td><span class='date'>{day}</span>  </td>"
             else:
-                return f"<td><a href='{day}'><span class='date'>{day}</span><span class='nb_rdv'> {total_event_by_id} visite{pluralize(total_event_by_id)}</span></a></td>"
+                return f"<td><a href='{day}' class='text-decoration-none'><span class='date'>{day}</span><span class='nb_rdv'> {total_event_by_id} visite{pluralize(total_event_by_id)}</span></a></td>"
         else:
             return f"<td class='noday'></td>"
 
@@ -68,7 +68,7 @@ class CalEvent(HTMLCalendar):
     def formatmonth(self, withyear=True):
         """Format month."""
         activites = Event.objects.filter(date__year=self.year, date__month=self.month)
-        cal = f'<table class="table" border="0" cellpadding="0" cellspacing="0"><tr><th class="year" colspan="7"> </th></tr>\n'
+        cal = f'<table class="table-cal" border="0" cellpadding="0" cellspacing="0"><tr><th class="year" colspan="7"> </th></tr>\n'
         cal += f"{self.formatmonthname(self.year, self.month, withyear=True)}\n"
         cal += f"{self.formatweekheader()}\n"
         for week in self.monthdays2calendar(self.year, self.month):
@@ -95,7 +95,6 @@ def is_valid_year_month(year, month):
 def is_valid_year_month_day(year, month, day):
     """Redirect url to the now.year if date is too late."""
     now = datetime.now()
-    print("in range : ", int(month) in list(range(1, 13)))
     return (
         True
         if (int(year) == now.year or int(year) == now.year + 1)
@@ -103,7 +102,7 @@ def is_valid_year_month_day(year, month, day):
         and (
             int(day)
             in list(range(1, calendar.monthrange(int(year), int(month))[1] + 1))
-            or int(day) > 0
+            and int(day) > 0
         )
         else False
     )
