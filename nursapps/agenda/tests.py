@@ -38,7 +38,7 @@ class TestEvent(TestCase):
         """Test create event at only one date and only one hour."""
         total_visit_per_day = 1
         delta_visit_per_day = 1
-        delta_visit_per_hour = None
+        delta_visit_per_hour = 0
         number_of_days = 1
         name = "Client n1"
         care_address = "1 rue du chemin"
