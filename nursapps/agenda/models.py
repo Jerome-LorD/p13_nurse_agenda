@@ -87,7 +87,7 @@ class Event(models.Model):
     group_id = models.CharField(default=random_group_id, max_length=400)
     total_visit_per_day = models.IntegerField()
     delta_visit_per_day = models.IntegerField(default=1)
-    delta_visit_per_hour = models.IntegerField(blank=True, null=True)
+    delta_visit_per_hour = models.IntegerField(default=0)
     number_of_days = models.IntegerField()
     day_per_week = models.CharField(max_length=100, blank=True, null=True)
 
@@ -387,7 +387,7 @@ class Event(models.Model):
                     (self.total_visit_per_day * self.delta_visit_per_hour),
                     self.delta_visit_per_hour,
                 )
-                if i + self.date.hour not in [0, 1, 2, 3, 4, 5, 24]
+                if index + self.date.hour not in [0, 1, 2, 3, 4, 5, 24]
             ]
             self.date += timedelta(days=self.delta_visit_per_day)
         return dates
@@ -396,16 +396,8 @@ class Event(models.Model):
         """Update events."""
         edit_choice = "".join(edit_choice)
 
-        # breakpoint()
-
         if edit_choice == "thisone":  # ok
             dates_grp_event = [self.date]
-            # breakpoint()
-            # group_event = [
-            #     evt
-            #     for evt in group_event
-            #     if evt.date.day == self.date.day and evt.date.hour == self.date.hour
-            # ]
 
         elif edit_choice == "thisone_after":  # ok
             dates_grp_event = [evt.date for evt in group_event if evt.date >= self.date]
@@ -416,8 +408,6 @@ class Event(models.Model):
         updated_dates = self.updated_date(
             dates_grp_event, self.date.day, self.date.hour, self.date.minute
         )
-
-        # breakpoint()
 
         if (
             len(self.day_per_week.split(", ")) > 1
@@ -464,15 +454,6 @@ class Event(models.Model):
             # consecutive days // hum: or spaced by a date delta. (not sure)
             # Only once a day.
 
-            # for event in group_event:
-            #     # if self.date not in [i.date for i in events]:
-            #     event.date += timedelta(days=(self.date.day - event.date.day))
-            #     event.date += timedelta(hours=(self.date.hour - event.date.hour))
-            #     event.date += timedelta(minutes=(self.date.minute - event.date.minute))
-            #     event.name = self.name
-            #     event.cares = self.cares
-            #     event.care_address = self.care_address
-            #     event.save()
             for date in updated_dates:
                 Event.objects.filter(pk=self.id).update(
                     name=self.name,
