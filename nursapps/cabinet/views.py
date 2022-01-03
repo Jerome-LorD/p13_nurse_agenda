@@ -1,7 +1,7 @@
 """Cabinet module."""
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from nursapps.agenda.models import Associate, Cabinet, RequestAssociate
+from nursapps.cabinet.models import Associate, Cabinet, RequestAssociate
 from nursapps.nursauth.models import User
 from django.http.response import HttpResponseRedirect
 from django.urls import reverse

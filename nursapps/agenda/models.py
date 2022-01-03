@@ -1,62 +1,15 @@
 """Agenda models module."""
-import random
-
 from django.db import models
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from nursapps.nursauth.models import User
 from django.urls import reverse
 from dateutil.rrule import WEEKLY, rrule, SU, MO, TU, WE, TH, FR, SA
 from dateutil.parser import *
 from datetime import datetime, timedelta
+from django.core.management import utils
+from django.core.management.utils import get_random_secret_key as random_group_id
 
 UserModel = get_user_model()
-
-
-class Cabinet(models.Model):
-    """Cabinet assoc model."""
-
-    name = models.CharField(max_length=240, unique=True, default=False, blank=True)
-
-    def __str__(self) -> str:
-        """Str representation."""
-        return self.name
-
-    class Meta:
-        """Meta."""
-
-        ordering = ["name"]
-
-
-class AssociateManager(models.Manager):
-    """Associate manager."""
-
-    def get_associates(self, cabinet_id):
-        """Get associates."""
-        associate = self.all().filter(cabinet_id=cabinet_id)
-        associates = User.objects.filter(id__in=[i.user_id for i in associate])
-        return associates
-
-
-class Associate(models.Model):
-    """Stores the user and the company they are affiliated with."""
-
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    cabinet = models.ForeignKey(Cabinet, on_delete=models.CASCADE)
-
-    objects = AssociateManager()
-
-    def __str__(self) -> str:
-        """Str representation."""
-        return f"{self.user} - {self.cabinet}"
-
-
-class RequestAssociate(models.Model):
-    """Request to associate the new user with the owner of the cabinet."""
-
-    sender_id = models.CharField(max_length=10, default=False, blank=True)
-    receiver_id = models.CharField(max_length=10, default=False, blank=True)
-    cabinet_id = models.CharField(max_length=10, default=False, blank=True)
 
 
 class EventManager(models.Manager):
@@ -67,13 +20,11 @@ class EventManager(models.Manager):
         return super().create(*args, **kwargs)
 
 
-def random_group_id():
-    """Generate a random ID to identify a group of event."""
-    return str(random.randint(1000, 1000000000))
-
-
 class Event(models.Model):
-    """Event model class."""
+    """Event model class.
+
+    NB: random_group_id pretend to be a unique id dedicated to a group of events.
+    """
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
@@ -84,7 +35,7 @@ class Event(models.Model):
         null=True,
         blank=True,
     )
-    group_id = models.CharField(default=random_group_id, max_length=400)
+    group_id = models.CharField(default=random_group_id(), max_length=400)
     total_visit_per_day = models.IntegerField()
     delta_visit_per_day = models.IntegerField(default=1)
     delta_visit_per_hour = models.IntegerField(default=0)
@@ -98,8 +49,11 @@ class Event(models.Model):
         return f"{self.user} - {self.name} - {self.care_address} - {self.cares}\
  - {self.date} - {self.group_id}"
 
+    def __lt__(self, other):
+        return self.date < other.date
+
     @property
-    def get_html_url(self):
+    def get_html_url(self) -> str:
         """Get html url."""
         url = reverse(
             "nurse:edit_event",
@@ -119,15 +73,19 @@ class Event(models.Model):
 
         List to handle the recursion per week with a recursion during the day.
         """
+        date_list = sorted(date_list)
+        # breakpoint()
+        if date_list[0].day > new_day:
+            new_day = date_list[0].day
         start_day = date_list[0].day
         start_hour = date_list[0].hour
         start_minute = date_list[0].minute
         new_date = []
-        for date_in in date_list:
-            date_in += timedelta(days=new_day - start_day)
-            date_in += timedelta(hours=new_hour - start_hour)
-            date_in += timedelta(minutes=new_minute - start_minute)
-            new_date.append(date_in)
+        for date in date_list:
+            date += timedelta(days=new_day - start_day)
+            date += timedelta(hours=new_hour - start_hour)
+            date += timedelta(minutes=new_minute - start_minute)
+            new_date.append(date)
         return new_date
 
     def by_hour(self) -> tuple:
@@ -156,14 +114,14 @@ class Event(models.Model):
         """Create a weekly event with delta in hour."""
         dates = rrule(
             WEEKLY,
-            count=self.number_of_days * 2,
+            count=self.number_of_days * self.total_visit_per_day,
             wkst=SU,
             byhour=self.by_hour(),
             byweekday=self.by_week_day(),
             dtstart=self.date,
         )
         dates = list(dates)
-        for index in range(0, self.number_of_days * 2):
+        for index in range(0, self.number_of_days * self.total_visit_per_day):
             Event.objects.create(
                 total_visit_per_day=self.total_visit_per_day,
                 delta_visit_per_day=self.delta_visit_per_day,
@@ -205,23 +163,18 @@ class Event(models.Model):
 
     def create_unique_day_at_unique_hour(self, user_id):
         """Create an event once a day at a specific time."""
-        for i in range(
-            0,
-            self.total_visit_per_day * self.delta_visit_per_day,
-            self.delta_visit_per_day,
-        ):
-            Event.objects.create(
-                total_visit_per_day=self.total_visit_per_day,
-                delta_visit_per_day=self.delta_visit_per_day,
-                delta_visit_per_hour=self.delta_visit_per_hour,
-                number_of_days=self.number_of_days,
-                name=self.name,
-                care_address=self.care_address,
-                cares=self.cares,
-                user_id=user_id,
-                group_id=self.group_id,
-                date=self.date + timedelta(days=i),
-            )
+        Event.objects.create(
+            total_visit_per_day=self.total_visit_per_day,
+            delta_visit_per_day=self.delta_visit_per_day,
+            delta_visit_per_hour=self.delta_visit_per_hour,
+            number_of_days=self.number_of_days,
+            name=self.name,
+            care_address=self.care_address,
+            cares=self.cares,
+            user_id=user_id,
+            group_id=self.group_id,
+            date=self.date,
+        )
 
     def create_unique_day_at_unique_hour_during_several_consecutive_days(self, user_id):
         """Create unique day at unique hour during several consecutive days.
@@ -244,7 +197,7 @@ class Event(models.Model):
                 date=dates[index],
             )
 
-    def unique_day_with_recurence_in_it(self, user_id):
+    def create_unique_day_with_recurence_in_it(self, user_id):
         print("unique day with recurency in it.")
         for i in range(
             0,
@@ -284,7 +237,8 @@ class Event(models.Model):
                 date=dates[index],
             )
 
-    def create_multiple_time_in_day_with_on_several_days(self, user_id):
+    def create_several_times_a_day_for_several_days(self, user_id):
+        """Create several times a day for several days."""
         print("2 x par jour pendant plusieurs jours")
         dates = self.get_recurency_dates()
         for index in range(0, len(dates)):
@@ -306,10 +260,12 @@ class Event(models.Model):
         if self.day_per_week and self.delta_visit_per_hour:
             print("create 1")
             self.create_weekly_event_with_delta_hour(user_id)
+            """2x/j++ le lun jeu et sam"""
 
         elif self.day_per_week and not self.delta_visit_per_hour:
             print("create 2")
             self.create_unique_event_per_day_with_week_recurrency(user_id)
+            """1x/jour le lun jeu et sam"""
         elif (
             not self.day_per_week
             and not self.delta_visit_per_hour
@@ -324,6 +280,7 @@ class Event(models.Model):
         ):
             print("create 4")
             self.create_unique_day_with_recurency_in_days_delta(user_id)
+            """create_multiple_times_a_day_for_a_single_day"""
 
         elif (
             not self.day_per_week
@@ -340,7 +297,7 @@ class Event(models.Model):
             and self.number_of_days == 1
         ):
             print("create 6")
-            self.unique_day_with_recurence_in_it(user_id)
+            self.create_unique_day_with_recurence_in_it(user_id)
 
         elif (
             not self.day_per_week
@@ -349,22 +306,20 @@ class Event(models.Model):
             and self.number_of_days > 1
         ):
             print("create 7")
-            self.create_multiple_time_in_day_with_on_several_days(user_id)
+            self.create_several_times_a_day_for_several_days(user_id)
 
     def get_dates(self) -> list:
         """Return a date list."""
         dates = [self.date]
-        for index in list(
-            range(
-                0,
-                (
-                    self.number_of_days - 1
-                    if self.number_of_days >= 3
-                    else self.number_of_days
-                )
-                * self.delta_visit_per_day,
-                self.delta_visit_per_day,
+        for index in range(
+            0,
+            (
+                self.number_of_days - 1
+                if self.number_of_days >= 3
+                else self.number_of_days
             )
+            * self.delta_visit_per_day,
+            self.delta_visit_per_day,
         ):
             self.date += timedelta(days=self.delta_visit_per_day)
             dates.append(self.date)
@@ -392,101 +347,92 @@ class Event(models.Model):
             self.date += timedelta(days=self.delta_visit_per_day)
         return dates
 
+    def updated_dates_in_group(self, group_event, updated_dates):
+        """Upd."""
+        for index, event in enumerate(group_event):
+            Event.objects.filter(pk=event.id).update(
+                name=self.name,
+                care_address=self.care_address,
+                cares=self.cares,
+                user_id=self.user.id,
+                date=updated_dates[index],
+            )
+
     def update_events(self, group_event, edit_choice):
         """Update events."""
         edit_choice = "".join(edit_choice)
 
-        if edit_choice == "thisone":  # ok
+        if edit_choice == "thisone":
             dates_grp_event = [self.date]
 
-        elif edit_choice == "thisone_after":  # ok
-            dates_grp_event = [evt.date for evt in group_event if evt.date >= self.date]
-            group_event = [event for event in group_event if event.date >= self.date]
-        elif edit_choice == "allevent":  # ok
+        elif edit_choice == "thisone_after":
+            dates_grp_event = [
+                evt.date
+                for evt in group_event
+                if evt.date >= datetime(self.date.year, self.date.month, self.date.day)
+            ]
+            group_event = sorted(
+                [
+                    evt
+                    for evt in group_event
+                    if evt.date
+                    >= datetime(self.date.year, self.date.month, self.date.day)
+                ]
+            )
+
+        elif edit_choice == "allevent":
             dates_grp_event = [evt.date for evt in group_event]
 
         updated_dates = self.updated_date(
             dates_grp_event, self.date.day, self.date.hour, self.date.minute
         )
 
-        if (
+        if len(dates_grp_event) > 1 and edit_choice == "allevent":
+            """Update all group"""
+            self.updated_dates_in_group(group_event, updated_dates)
+
+        elif edit_choice == "thisone_after" and len(dates_grp_event) > 1:
+            """P2 - test update this one & after if selected days"""
+            self.updated_dates_in_group(group_event, updated_dates)
+
+        elif (
+            edit_choice == "thisone"
+            and self.delta_visit_per_hour > 0
+            and self.delta_visit_per_day > 1
+            and self.number_of_days > 1
+            and self.total_visit_per_day > 1
+        ):
+            """
+            update an event among a batch of events.
+            eg: 2x/d & 1d/2 during three days
+            Only the date selected will be updated.
+            """
+            event = Event.objects.filter(pk=self.id)
+            event.update(
+                name=self.name,
+                care_address=self.care_address,
+                cares=self.cares,
+                user_id=self.user.id,
+                date=self.date,
+            )
+
+        elif (
+            self.number_of_days > 1
+            and self.delta_visit_per_hour > 0
+            and len(self.day_per_week.split(", ")) < 2
+        ):
+            self.updated_dates_in_group(group_event, updated_dates)
+
+        elif (
             len(self.day_per_week.split(", ")) > 1
-            and self.delta_visit_per_hour
+            and self.delta_visit_per_hour > 0
             and self.number_of_days > 1
             and len(updated_dates) > 1
         ):
-            # Update a unique day and a group of days [with recurency].
-            print("upd 1")
-            for index, event in enumerate(group_event):
-                Event.objects.filter(pk=event.id).update(
-                    name=self.name,
-                    care_address=self.care_address,
-                    cares=self.cares,
-                    user_id=self.user.id,
-                    date=updated_dates[index],
-                )
+            self.updated_dates_in_group(group_event, updated_dates)
 
-        elif (
-            len(self.day_per_week.split(", ")) > 1
-            and self.delta_visit_per_hour
-            and self.number_of_days > 1
-            and len(updated_dates) == 1
-        ):
-            # Updates an event that is part of a group in a day.
-            # This day is part of a group of selected days.
-            print("upd 1 unique")
-            for date in updated_dates:
-                Event.objects.filter(pk=self.id).update(
-                    name=self.name,
-                    care_address=self.care_address,
-                    cares=self.cares,
-                    user_id=self.user.id,
-                    date=date,
-                )
-
-        elif (
-            not self.day_per_week
-            and not self.delta_visit_per_hour
-            and self.number_of_days >= 1
-        ):
-            print("upd 2")
-            # Updates an event that can be unique or that can be part of a group of
-            # consecutive days // hum: or spaced by a date delta. (not sure)
-            # Only once a day.
-
-            for date in updated_dates:
-                Event.objects.filter(pk=self.id).update(
-                    name=self.name,
-                    care_address=self.care_address,
-                    cares=self.cares,
-                    user_id=self.user.id,
-                    date=date,
-                )
-
-        elif (
-            not self.day_per_week
-            and self.delta_visit_per_hour
-            and self.number_of_days >= 1
-        ):
-            """Update isolated event inside group."""
-            print("upd 3")
-            # updates an event that can be single or part of a group of consecutive
-            # days without being spaced by a date delta.
-            # Several times a day possibly.
-            for date in updated_dates:
-                Event.objects.filter(pk=self.id).update(
-                    name=self.name,
-                    care_address=self.care_address,
-                    cares=self.cares,
-                    user_id=self.user.id,
-                    date=date,
-                )
-
-        elif (
-            self.day_per_week
-            and not self.delta_visit_per_hour
-            and self.number_of_days > 1
-        ):
+        else:
+            """Update only one event, alone."""
             for date in updated_dates:
                 Event.objects.filter(pk=self.id).update(
                     name=self.name,

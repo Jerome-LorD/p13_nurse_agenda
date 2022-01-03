@@ -4,7 +4,7 @@ from django.contrib.auth import forms as auth_forms
 from django.contrib.auth import get_user_model
 
 # from django.core.exceptions import ValidationError
-from nursapps.agenda.models import Cabinet
+from nursapps.cabinet.models import Cabinet
 
 
 class CreateCabinet(forms.Form):  # CreateCabinetForm

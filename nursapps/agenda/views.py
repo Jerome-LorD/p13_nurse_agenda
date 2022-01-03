@@ -8,10 +8,10 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from nursapps.agenda.forms import EditEventForm, formEvent
-from nursapps.agenda.models import Event, Associate
+from nursapps.agenda.models import Event
+from nursapps.cabinet.models import Associate
 from datetime import datetime, timedelta, date
 from django.utils.safestring import mark_safe
-
 
 from nursapps.agenda.utils import (
     CalEvent,
@@ -31,12 +31,7 @@ from nursapps.agenda.utils import (
 )
 
 
-def trigger_error(request):
-    """Sentry test."""
-    division_by_zero = 1 / 0
-
-
-@login_required
+# @login_required
 def index(request):
     """Index view."""
     now = datetime.now()
@@ -93,12 +88,12 @@ def agenda(request, year, month):
         {
             "year": year,
             "month": month,
-            "prec_mois": prev_month_num,
-            "suiv_mois": next_month_num,
-            "prec_an": prev_y,
-            "suiv_an": next_y,
-            "prev": prev_month_n,
-            "nextmth": next_month_n,
+            "prev_month": prev_month_num,
+            "next_month": next_month_num,
+            "prev_year": prev_y,
+            "next_year": next_y,
+            "prev_mnth": prev_month_n,
+            "next_mnth": next_month_n,
             "html_calendar": mark_safe(html_cal),
             "user_id": user_id,
             "current_month": now.month,
@@ -135,7 +130,6 @@ def home(request):
 @login_required
 def daily_agenda(request, year, month, day):
     """Daily agenda."""
-    print("-------------------------DANS AG JOUR-----------------------------------")
     if not request.user.is_cabinet_owner:
         return HttpResponseRedirect(
             reverse(
@@ -173,19 +167,20 @@ def daily_agenda(request, year, month, day):
         user_id__in=associates,
     )
 
-    lapj = [
+    booked_hours = [
         appointment.date.strftime("%H:%M")
         for appointment in appointments_per_day
         if request.user.id == appointment.user_id or request.user.id in associates
     ]
 
-    nom_du_jour = datetime.strftime(date(year, month, day), "%A")
+    day_name = datetime.strftime(date(year, month, day), "%A")
     heure_unik = datetime.strftime(datetime.now(), "%H")
+    current_hour = now.hour
+
+    # breakpoint()
 
     nextday = next_day(year, month, day)
     prevday = prev_day(year, month, day)
-
-    # breakpoint()
 
     context = {
         "year": year,
@@ -195,10 +190,10 @@ def daily_agenda(request, year, month, day):
         "appointments_per_day": appointments_per_day,
         "prevday": prevday,
         "nextday": nextday,
-        "lapj": lapj,
+        "booked_hours": booked_hours,
         "uid": user_id,
-        "nom_du_jour": nom_du_jour,
-        "hunik": heure_unik,
+        "day_name": day_name,
+        # "hunik": current_hour,
         "current_month": now.month,
         "current_year": now.year,
         "associates": associates,
@@ -212,6 +207,11 @@ def daily_agenda(request, year, month, day):
 def create_events(request, year, month, day, hour, event_id=None):
     """Create_events."""
     now = datetime.now()
+
+    associate = Associate.objects.filter(user_id=request.user.id).first()
+    associates = Associate.objects.get_associates(associate.cabinet_id)
+    associates = [associate.id for associate in associates]
+
     hours = [str(timedelta(hours=hour))[:-3] for hour in numpy.arange(6, 23, 0.25)]
     # adding a zero before single digit:
     hours = [str(datetime.strptime(i, "%H:%M").time())[:5] for i in hours]
@@ -220,7 +220,7 @@ def create_events(request, year, month, day, hour, event_id=None):
         now = datetime.now()
         return HttpResponseRedirect(
             reverse(
-                "nurse:agenda_neo_rdv",
+                "nurse:new_event",
                 kwargs={
                     "year": now.year,
                     "month": now.month,
@@ -247,6 +247,7 @@ def create_events(request, year, month, day, hour, event_id=None):
 
     form = formEvent(
         request.POST or None,
+        user=request.user,
         instance=event,
         initial={
             "cares": event.cares.split(", "),
@@ -261,7 +262,8 @@ def create_events(request, year, month, day, hour, event_id=None):
     if request.POST and form.is_valid():
         form.clean_cares()
         form.clean_day_per_week()
-
+        # form.clean_date(associates)
+        # breakpoint()
         if str(event.date)[11:16] in hours:
             event.create_events(user_id=request.user.id)
             return HttpResponseRedirect(
@@ -372,6 +374,7 @@ def edit_event(request, year, month, day, hour, event_id):
 
     form = EditEventForm(
         request.POST or None,
+        user=request.user,
         instance=event,
         initial={
             "day_per_week": event.day_per_week.split(", ")
@@ -391,6 +394,7 @@ def edit_event(request, year, month, day, hour, event_id):
     edit_choice = request.POST.get("choice_event_edit")
 
     if request.POST and form.is_valid():
+        # form.clean_date()
         already = event.update_events(group_event, edit_choice)
         if not already:
             return HttpResponseRedirect(

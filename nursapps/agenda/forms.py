@@ -1,8 +1,13 @@
 """Agenda form module."""
+import datetime as dt
 from django import forms
 from django.forms import DateInput
 
 from nursapps.agenda.models import Event
+from nursapps.cabinet.models import Associate
+
+from django.core.exceptions import ValidationError
+from datetime import datetime
 
 
 CARES_CHOICES = [
@@ -48,6 +53,7 @@ class formEvent(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         """Init."""
+        self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
         self.fields["date"].input_formats = ("%d/%m/%Y %H:%M",)
 
@@ -114,7 +120,7 @@ class formEvent(forms.ModelForm):
     )
 
     total_visit_per_day = forms.CharField(
-        max_length=2,
+        max_length=1,
         widget=forms.TextInput(
             attrs={
                 "class": "form-control",
@@ -188,20 +194,58 @@ class formEvent(forms.ModelForm):
         day_per_week = ", ".join(day_per_week)
         return day_per_week
 
+    def clean_date(self):
+        """Return cleaned date to accept only minutes in [0, 15, 30, 45]."""
+        associate = Associate.objects.filter(user_id=self.user.id).first()
+        associates = Associate.objects.get_associates(associate.cabinet_id)
+        associates = [associate.id for associate in associates]
+        dt_obj = datetime.strptime(self.initial["date"][:-6], "%Y-%m-%d")
+        events = Event.objects.filter(
+            date__contains=dt.date(
+                year=dt_obj.year, month=dt_obj.month, day=dt_obj.day
+            ),
+            user_id__in=associates,
+        )
 
-from django.forms import Select
+        date = self.cleaned_data["date"]
+
+        if (
+            (
+                # f"{date.hour}:{date.minute}"
+                # not in [f"{i.date.hour}:{i.date.minute}" for i in events]
+                date
+                not in [i.date for i in events]
+            )
+            and date.minute in [0, 15, 30, 45]
+            and date.hour in list(range(6, 23))
+            # TODO: et si le créneau est ce
+        ):
+            # breakpoint()
+            return date
+        # elif f"{date.hour}:{date.minute}" in [
+        #     f"{i.date.hour}:{i.date.minute}"
+        #     for i in events
+        #     if i.user_id == self.user.id
+        # ]:
+        # elif date in [i.date for i in events if i.user_id == self.user.id]:
+        #     # breakpoint()
+        #     return date
+        raise ValidationError("Vous ne pouvez pas valider cette tranche horaire.")
 
 
-class Select(Select):
-    def create_option(self, *args, **kwargs):
-        option = super().create_option(*args, **kwargs)
-        if not option.get("value"):
-            option["attrs"]["disabled"] = "disabled"
+# from django.forms import Select
 
-        if option.get("value") == 2:
-            option["attrs"]["disabled"] = "disabled"
-        breakpoint()
-        return option
+
+# class Select(Select):
+#     def create_option(self, *args, **kwargs):
+#         option = super().create_option(*args, **kwargs)
+#         if not option.get("value"):
+#             option["attrs"]["disabled"] = "disabled"
+
+#         if option.get("value") == 2:
+#             option["attrs"]["disabled"] = "disabled"
+#         breakpoint()
+#         return option
 
 
 class EditEventForm(formEvent):

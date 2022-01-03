@@ -1,12 +1,12 @@
 """Nursauth views module."""
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import authenticate
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http.response import HttpResponseRedirect
 from django.urls import reverse
-from nursapps.agenda.models import Associate, Cabinet, RequestAssociate
+from nursapps.cabinet.models import Associate, Cabinet, RequestAssociate
 from nursapps.nursauth.models import User
 from .forms import (
     InscriptForm,
@@ -17,7 +17,7 @@ from nursapps.cabinet.forms import (
     AssociationValidation,
 )
 
-from datetime import datetime, timedelta, date
+from datetime import datetime
 
 
 def inscript(request):
@@ -81,7 +81,12 @@ def login(request):
 
 @login_required
 def user_profile(request):
-    """Account."""
+    """Account.
+
+    request.session["cabinet_name"] = cabinet.name
+
+
+    """
     sender = None
     associate = None
     lst_associates_id = None

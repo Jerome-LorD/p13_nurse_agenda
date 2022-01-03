@@ -34,6 +34,7 @@
                 <form method="post" class="user" action="{% url 'cabinet:askfor' %}">
                     {% csrf_token %}
                     {{ form.as_ul }}
+                    <br><br><br>
                     <input type="submit" class="btn btn-primary col-md-2" value="Envoyer la demande">
                 </form>    
 

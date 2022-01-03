@@ -1,15 +1,23 @@
 """Test agenda module."""
 from django.test import TestCase
-from django.contrib.auth.hashers import make_password
-
 from django.contrib.auth import get_user_model
-from nursapps.agenda.forms import formEvent
-from nursapps.agenda.models import Event, Associate, Cabinet
+from nursapps.agenda.models import Event
+from nursapps.cabinet.models import Associate, Cabinet
 from dateutil.rrule import WEEKLY, rrule, SU, MO, TU, WE, TH, FR, SA
 from dateutil.parser import *
 from datetime import datetime, timedelta
 
+
 User = get_user_model()
+
+"""
+pour la vérification des dates, je n'y vois pas d'opposition
+L'idée si tu veux aller plus loin, c'est d'expliquer par ton code ou des commentaires 
+(ou la docstring) pourquoi telle date devrait être egal à telle valeur, car là on 
+comprend que tu testes les dates, mais on ne comprend pas forcément pourquoi tu 
+t'assure que la valeur est celle là plutot qu'une autre
+
+"""
 
 
 class TestEvent(TestCase):
@@ -68,8 +76,77 @@ class TestEvent(TestCase):
 
         self.assertEqual(event.date, date)
 
+    def test_update_event_at_only_one_date_and_only_one_hour(self):
+        """Test update hour from onlyone event.
+
+        Create 31/12/2021 06:00
+        Update 31/12/2021 07:15
+        """
+        total_visit_per_day = 1
+        delta_visit_per_day = 1
+        delta_visit_per_hour = 0
+        number_of_days = 1
+        name = "Client n1"
+        care_address = "1 rue du chemin"
+        cares = "AB, CD, EF"
+        group_id = "123456789"
+        date = datetime(2021, 12, 31, 6, 0)
+
+        for i in range(
+            0,
+            total_visit_per_day * delta_visit_per_day,
+            delta_visit_per_day,
+        ):
+            event = Event.objects.create(
+                total_visit_per_day=total_visit_per_day,
+                delta_visit_per_day=delta_visit_per_day,
+                delta_visit_per_hour=delta_visit_per_hour,
+                number_of_days=number_of_days,
+                name=name,
+                care_address=care_address,
+                cares=cares,
+                user_id=self.user.id,
+                group_id=group_id,
+                date=date + timedelta(days=i),
+            )
+
+        dates_grp_event = [date]
+
+        updated_dates = event.updated_date(
+            dates_grp_event, new_day=0, new_hour=7, new_minute=15
+        )
+
+        for date in updated_dates:
+            Event.objects.filter(pk=event.id).update(
+                name=event.name,
+                care_address=event.care_address,
+                cares=event.cares,
+                user_id=event.user.id,
+                date=date,
+            )
+
+        self.assertIn(date, updated_dates)
+
     def test_create_event_at_only_one_date_and_twice_a_day(self):
-        """Test create event at only one date and twice a day."""
+        """Test create event at only one date and twice a day.
+
+        Expecting results: 2 datetime on 1/1/2022 at 06:00 and 18:00
+        >>> d = datetime.datetime(2021, 12, 26, 6, 0)
+        >>> d + timedelta(hours=0)
+        datetime.datetime(2021, 12, 26, 6, 0)
+        >>> d + timedelta(hours=12)
+        datetime.datetime(2021, 12, 26, 18, 0)
+
+        Explanation for the range(start, stop, step):
+
+        We have to specify how long is the hour delta in the form.
+        If We wanna space from 12 hours bitween two events, we just have to type "12" in
+        the form field.
+
+        start = 0 to include the selected hour
+        stop = 1 * 12 to add 12 hours more (only one day)
+        step = 12
+        """
         total_visit_per_day = 2
         delta_visit_per_day = 1
         delta_visit_per_hour = 12
@@ -77,7 +154,7 @@ class TestEvent(TestCase):
         name = "Client n2"
         care_address = "1 rue du chemin"
         cares = "AB, CD, EF"
-        group_id = "123456789"
+        group_id = "1234-56789"
         date = datetime(2021, 12, 31, 6, 0)
 
         for i in range(
@@ -107,3 +184,210 @@ class TestEvent(TestCase):
             ],
             dates,
         )
+
+    def test_update_event_at_only_one_date_and_twice_a_day(self):
+        """Test update event at only one date and twice a day.
+
+        So we have two events on 26/12:
+        datetime.datetime(2021, 12, 26, 6, 0)
+        datetime.datetime(2021, 12, 26, 18, 0)
+
+        And the point is to change the first one from 6 a.m. to 7 a.m. and leave the
+        last one as it is.
+        """
+        total_visit_per_day = 2
+        delta_visit_per_day = 1
+        delta_visit_per_hour = 12
+        number_of_days = 1
+        name = "Client n2"
+        care_address = "1 rue du chemin"
+        cares = "AB, CD, EF"
+        group_id = "1234-56789"
+        date = datetime(2021, 12, 31, 6, 0)
+
+        for i in range(
+            0,
+            total_visit_per_day * delta_visit_per_hour,
+            delta_visit_per_hour,
+        ):
+            Event.objects.create(
+                total_visit_per_day=total_visit_per_day,
+                delta_visit_per_day=delta_visit_per_day,
+                delta_visit_per_hour=delta_visit_per_hour,
+                number_of_days=number_of_days,
+                name=name,
+                care_address=care_address,
+                cares=cares,
+                user_id=self.user.id,
+                group_id=group_id,
+                date=date + timedelta(hours=i),
+            )
+        event = Event.objects.filter(group_id=group_id, date=date).first()
+
+        dates_grp_event = [date]
+        updated_dates = Event.updated_date(
+            dates_grp_event, new_day=0, new_hour=7, new_minute=0
+        )
+
+        for date in updated_dates:
+            Event.objects.filter(pk=event.id).update(
+                name=name,
+                care_address=care_address,
+                cares=cares,
+                user_id=self.user.id,
+                date=date,
+            )
+
+        self.assertIn(date, updated_dates)
+
+    def test_create_three_consecutive_days_with_three_events_spaced_6_hours_apart(self):
+        """Test create three consecutive days with three events spaced 6 hours apart."""
+        total_visit_per_day = 3
+        delta_visit_per_day = 1  # 1 for consecutives days
+        delta_visit_per_hour = 6
+        number_of_days = 3
+        name = "Client n3"
+        care_address = "1 rue du chemin"
+        cares = "AB, CD, EF"
+        group_id = "123456789"
+        date = datetime(2021, 12, 31, 6, 0)
+
+        dates = []
+        for index in range(0, number_of_days):
+            dates += [
+                date + timedelta(hours=hour)
+                for hour in range(
+                    0,
+                    (total_visit_per_day * delta_visit_per_hour),
+                    delta_visit_per_hour,
+                )
+                if index + date.hour not in [0, 1, 2, 3, 4, 5, 24]
+            ]
+            date += timedelta(days=delta_visit_per_day)
+
+        for index in range(0, len(dates)):
+            Event.objects.create(
+                total_visit_per_day=total_visit_per_day,
+                delta_visit_per_day=delta_visit_per_day,
+                delta_visit_per_hour=delta_visit_per_hour,
+                number_of_days=number_of_days,
+                name=name,
+                care_address=care_address,
+                cares=cares,
+                user_id=self.user.id,
+                group_id=group_id,
+                date=dates[index],
+            )
+        events = Event.objects.filter(group_id=group_id)
+
+        all_dates = [event.date for event in events]
+
+        self.assertEqual(
+            [
+                datetime(2021, 12, 31, 6, 0),
+                datetime(2021, 12, 31, 12, 0),
+                datetime(2021, 12, 31, 18, 0),
+                datetime(2022, 1, 1, 6, 0),
+                datetime(2022, 1, 1, 12, 0),
+                datetime(2022, 1, 1, 18, 0),
+                datetime(2022, 1, 2, 6, 0),
+                datetime(2022, 1, 2, 12, 0),
+                datetime(2022, 1, 2, 18, 0),
+            ],
+            all_dates,
+        )
+
+    def test_create_weekly_event_with_delta_hour(self):
+        """Create a weekly event with delta in hour.
+
+        3 times by day, every 6 hours from 06:00
+        on monday, wednesday & friday.
+
+        Expected: 9 dates
+            - 3 on 31/12/2021
+            - 3 on 3/1/2022
+            - 3 on 5/1/2022
+        """
+        total_visit_per_day = 3
+        delta_visit_per_day = 1  # 1 for consecutives days (by default = 1)
+        delta_visit_per_hour = 6
+        day_per_week = "0, 2, 4"  # on monday, wednesday & friday
+        number_of_days = 3
+        name = "Client n4"
+        care_address = "1 rue du chemin"
+        cares = "AB, CD, EF"
+        group_id = "123456789"
+        date = datetime(2021, 12, 31, 6, 0)
+
+        def by_hour() -> tuple:
+            ajust = 1
+            return tuple(
+                range(
+                    date.hour,
+                    (
+                        (
+                            delta_visit_per_hour + ajust
+                            if delta_visit_per_hour > 3
+                            else delta_visit_per_hour + ajust + 1
+                        )
+                        * total_visit_per_day
+                    ),
+                    delta_visit_per_hour,
+                )
+            )
+
+        def by_week_day() -> tuple:
+            """Return the rrule byweekday parameter."""
+            return tuple([int(day_number) for day_number in day_per_week.split(", ")])
+
+        dates = rrule(
+            WEEKLY,
+            count=number_of_days * total_visit_per_day,
+            wkst=SU,
+            byhour=by_hour(),
+            byweekday=by_week_day(),
+            dtstart=date,
+        )
+        dates = list(dates)
+        for index in range(0, number_of_days * total_visit_per_day):
+            Event.objects.create(
+                total_visit_per_day=total_visit_per_day,
+                delta_visit_per_day=delta_visit_per_day,
+                delta_visit_per_hour=delta_visit_per_hour,
+                number_of_days=number_of_days,
+                name=name,
+                care_address=care_address,
+                cares=cares,
+                user_id=self.user.id,
+                day_per_week=day_per_week,
+                group_id=group_id,
+                date=dates[index],
+            )
+        events = Event.objects.filter(group_id=group_id)
+
+        created_dates = [event.date for event in events]
+
+        self.assertEqual(
+            [
+                datetime(2021, 12, 31, 6, 0),
+                datetime(2021, 12, 31, 12, 0),
+                datetime(2021, 12, 31, 18, 0),
+                datetime(2022, 1, 3, 6, 0),
+                datetime(2022, 1, 3, 12, 0),
+                datetime(2022, 1, 3, 18, 0),
+                datetime(2022, 1, 5, 6, 0),
+                datetime(2022, 1, 5, 12, 0),
+                datetime(2022, 1, 5, 18, 0),
+            ],
+            created_dates,
+        )
+
+    def test_update_events(self):
+        pass
+
+
+class TestFormEvent(TestCase):
+    """Test Event class."""
+
+    def setUp(self):
+        """Set Up."""

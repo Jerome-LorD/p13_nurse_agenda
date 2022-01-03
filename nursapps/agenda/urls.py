@@ -28,5 +28,5 @@ urlpatterns = [
         views.delete_event,
         name="del_event",
     ),
-    path("sentry-debug/", views.trigger_error),
+    # path("sentry-debug/", views.trigger_error),
 ]

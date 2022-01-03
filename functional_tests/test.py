@@ -28,7 +28,7 @@ class SeleniumTests(StaticLiveServerTestCase):
 
         cls.browser = webdriver.Firefox(options=options)
         cls.browser.implicitly_wait(2)
-        cls.timeout = 5
+        cls.timeout = 3
 
     @classmethod
     def tearDownClass(cls):
@@ -66,12 +66,12 @@ class SeleniumTests(StaticLiveServerTestCase):
         self.browser.find_element_by_id("Log-out").click()
         self.browser.implicitly_wait(2)
         self.browser.find_element_by_id("Logout").click()
-        self.assertIn("IDE Agenda -- Login", self.browser.title)
+        self.assertIn("IDE Agenda -- Accueil", self.browser.title)
 
     def test_index_title(self):
         """Test Index title is 'Page d'accueil'."""
         self.browser.get(self.live_server_url)
-        self.assertIn("IDE Agenda -- Login", self.browser.title)
+        self.assertIn("IDE Agenda -- Accueil", self.browser.title)
 
     def test_agenda_redirect_to_login(self):
         """Test agenda redirect to login with no user connected."""
