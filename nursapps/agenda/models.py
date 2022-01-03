@@ -49,7 +49,8 @@ class Event(models.Model):
         return f"{self.user} - {self.name} - {self.care_address} - {self.cares}\
  - {self.date} - {self.group_id}"
 
-    def __lt__(self, other):
+    def __lt__(self, other) -> bool:
+        """Compare the instance date selected with the event date."""
         return self.date < other.date
 
     @property
@@ -198,7 +199,7 @@ class Event(models.Model):
             )
 
     def create_unique_day_with_recurence_in_it(self, user_id):
-        print("unique day with recurency in it.")
+        """Create unique day with recurence in it."""
         for i in range(
             0,
             self.total_visit_per_day * self.delta_visit_per_hour,

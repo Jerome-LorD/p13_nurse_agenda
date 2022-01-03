@@ -10,15 +10,6 @@ from datetime import datetime, timedelta
 
 User = get_user_model()
 
-"""
-pour la vérification des dates, je n'y vois pas d'opposition
-L'idée si tu veux aller plus loin, c'est d'expliquer par ton code ou des commentaires 
-(ou la docstring) pourquoi telle date devrait être egal à telle valeur, car là on 
-comprend que tu testes les dates, mais on ne comprend pas forcément pourquoi tu 
-t'assure que la valeur est celle là plutot qu'une autre
-
-"""
-
 
 class TestEvent(TestCase):
     """Test Event class."""
