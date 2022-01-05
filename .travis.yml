@@ -28,6 +28,9 @@ env:
 script:
   - python manage.py test
 
+before_deploy:
+  - gem install faraday -v 1.8.0
+
 deploy:
   provider: heroku
   strategy: git
