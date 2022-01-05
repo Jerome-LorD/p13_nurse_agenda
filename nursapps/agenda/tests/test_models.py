@@ -1,11 +1,12 @@
-"""Test agenda module."""
+"""Test agenda models module."""
 from django.test import TestCase
 from django.contrib.auth import get_user_model
-from nursapps.agenda.models import Event
+from nursapps.agenda.models import Event, Events
 from nursapps.cabinet.models import Associate, Cabinet
-from dateutil.rrule import WEEKLY, rrule, SU, MO, TU, WE, TH, FR, SA
+from dateutil.rrule import WEEKLY, rrule, SU
 from dateutil.parser import *
 from datetime import datetime, timedelta
+from django.test import Client
 
 
 User = get_user_model()
@@ -20,6 +21,8 @@ class TestEvent(TestCase):
             username="bill", email="bill@bool.com", password="poufpouf"
         )
 
+        self.client = Client()
+
         cabinet = Cabinet.objects.create(name="cabbill")
         self.user.is_cabinet_owner = True
         self.user.save()
@@ -28,6 +31,8 @@ class TestEvent(TestCase):
 
         associates = Associate.objects.get_associates(associate.cabinet_id)
         self.associates = [associate.id for associate in associates]
+
+        self.events = Events.objects.create()
 
     def test_user_is_cabinet_owner(self):
         """Test if the current user is a cabinet owner."""
@@ -42,7 +47,7 @@ class TestEvent(TestCase):
         name = "Client n1"
         care_address = "1 rue du chemin"
         cares = "AB, CD, EF"
-        group_id = "123456789"
+        # events_id = self.events.id
         date = datetime(2021, 12, 31, 6, 0)
 
         event = Event()
@@ -61,11 +66,12 @@ class TestEvent(TestCase):
                 care_address=care_address,
                 cares=cares,
                 user_id=self.user.id,
-                group_id=group_id,
+                events_id=self.events.id,
                 date=date + timedelta(days=i),
             )
 
         self.assertEqual(event.date, date)
+        self.assertEqual(event.name, "Client n1")
 
     def test_update_event_at_only_one_date_and_only_one_hour(self):
         """Test update hour from onlyone event.
@@ -80,7 +86,7 @@ class TestEvent(TestCase):
         name = "Client n1"
         care_address = "1 rue du chemin"
         cares = "AB, CD, EF"
-        group_id = "123456789"
+        # events_id = Events.objects.create()
         date = datetime(2021, 12, 31, 6, 0)
 
         for i in range(
@@ -97,7 +103,7 @@ class TestEvent(TestCase):
                 care_address=care_address,
                 cares=cares,
                 user_id=self.user.id,
-                group_id=group_id,
+                events_id=self.events.id,
                 date=date + timedelta(days=i),
             )
 
@@ -129,11 +135,9 @@ class TestEvent(TestCase):
         datetime.datetime(2021, 12, 26, 18, 0)
 
         Explanation for the range(start, stop, step):
-
         We have to specify how long is the hour delta in the form.
         If We wanna space from 12 hours bitween two events, we just have to type "12" in
         the form field.
-
         start = 0 to include the selected hour
         stop = 1 * 12 to add 12 hours more (only one day)
         step = 12
@@ -145,7 +149,7 @@ class TestEvent(TestCase):
         name = "Client n2"
         care_address = "1 rue du chemin"
         cares = "AB, CD, EF"
-        group_id = "1234-56789"
+        events_id = self.events.id
         date = datetime(2021, 12, 31, 6, 0)
 
         for i in range(
@@ -162,10 +166,10 @@ class TestEvent(TestCase):
                 care_address=care_address,
                 cares=cares,
                 user_id=self.user.id,
-                group_id=group_id,
+                events_id=events_id,
                 date=date + timedelta(hours=i),
             )
-        events = Event.objects.filter(group_id=group_id)
+        events = Event.objects.filter(events_id=events_id)
 
         dates = [event.date for event in events]
         self.assertEqual(
@@ -182,7 +186,6 @@ class TestEvent(TestCase):
         So we have two events on 26/12:
         datetime.datetime(2021, 12, 26, 6, 0)
         datetime.datetime(2021, 12, 26, 18, 0)
-
         And the point is to change the first one from 6 a.m. to 7 a.m. and leave the
         last one as it is.
         """
@@ -193,7 +196,7 @@ class TestEvent(TestCase):
         name = "Client n2"
         care_address = "1 rue du chemin"
         cares = "AB, CD, EF"
-        group_id = "1234-56789"
+        events_id = self.events.id
         date = datetime(2021, 12, 31, 6, 0)
 
         for i in range(
@@ -210,10 +213,10 @@ class TestEvent(TestCase):
                 care_address=care_address,
                 cares=cares,
                 user_id=self.user.id,
-                group_id=group_id,
+                events_id=events_id,
                 date=date + timedelta(hours=i),
             )
-        event = Event.objects.filter(group_id=group_id, date=date).first()
+        event = Event.objects.filter(events_id=events_id, date=date).first()
 
         dates_grp_event = [date]
         updated_dates = Event.updated_date(
@@ -240,7 +243,7 @@ class TestEvent(TestCase):
         name = "Client n3"
         care_address = "1 rue du chemin"
         cares = "AB, CD, EF"
-        group_id = "123456789"
+        events_id = self.events.id
         date = datetime(2021, 12, 31, 6, 0)
 
         dates = []
@@ -266,10 +269,10 @@ class TestEvent(TestCase):
                 care_address=care_address,
                 cares=cares,
                 user_id=self.user.id,
-                group_id=group_id,
+                events_id=events_id,
                 date=dates[index],
             )
-        events = Event.objects.filter(group_id=group_id)
+        events = Event.objects.filter(events_id=events_id)
 
         all_dates = [event.date for event in events]
 
@@ -307,7 +310,7 @@ class TestEvent(TestCase):
         name = "Client n4"
         care_address = "1 rue du chemin"
         cares = "AB, CD, EF"
-        group_id = "123456789"
+        events_id = self.events.id
         date = datetime(2021, 12, 31, 6, 0)
 
         def by_hour() -> tuple:
@@ -351,10 +354,10 @@ class TestEvent(TestCase):
                 cares=cares,
                 user_id=self.user.id,
                 day_per_week=day_per_week,
-                group_id=group_id,
+                events_id=events_id,
                 date=dates[index],
             )
-        events = Event.objects.filter(group_id=group_id)
+        events = Event.objects.filter(events_id=events_id)
 
         created_dates = [event.date for event in events]
 
@@ -373,12 +376,18 @@ class TestEvent(TestCase):
             created_dates,
         )
 
-    def test_update_events(self):
-        pass
+    def test_wrong_url_leads_to_404_status_code(self):
+        """Test wrong url leads to 404 html page."""
+        response = self.client.get("/agenda/2022/01/10/rdv/08:00/edit/262/blabla")
+        self.assertEqual(response.status_code, 404)
 
+    def test_url_leads_to_302_status_code(self):
+        """Test url leads to 3025) status code."""
+        response = self.client.get("/agenda/2022/01/10/")
+        self.assertEqual(response.status_code, 302)
 
-class TestFormEvent(TestCase):
-    """Test Event class."""
-
-    def setUp(self):
-        """Set Up."""
+    def test_url_leads_to_200_status_code(self):
+        """Test url leads to 200 status code."""
+        self.client.force_login(self.user)
+        response = self.client.get("/agenda/2022/1/3/")
+        self.assertEqual(response.status_code, 200)

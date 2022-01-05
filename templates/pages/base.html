@@ -57,7 +57,7 @@
             <li>
                 <div class="form-group col">
                         <a class="btn btn-success btn-sm mt-2" href="{% url 'nursauth:login' %}">Connexion</a>
-                        <a class="btn btn-success btn-sm mt-2" href="{% url 'nursauth:inscript' %}">Inscription</a>
+                        <a class="btn btn-dark btn-sm mt-2" href="{% url 'nursauth:inscript' %}">Inscription</a>
                 </div>
             </li>
             <!-- Divider -->
@@ -67,7 +67,7 @@
             {% else %}
                 <li class="nav-item active"> 
                     
-                    <a class="nav-link" href="{% url 'nurse:main_agenda' current_year current_month %}">
+                    <a id="planning" class="nav-link" href="{% url 'nurse:main_agenda' current_year current_month %}">
                         <i class="fas fa-fw fa-tachometer-alt"></i>
                         <span>Planning</span>
                     </a>
@@ -169,6 +169,7 @@
 
                 
                 {% block home %}{% endblock home %}
+                {% block error404 %}{% endblock error404 %}
                     {% block reset %}{% endblock reset %}
                     {% block reset_done %}{% endblock reset_done %}
                     {% block reset-confirm %}{% endblock reset-confirm %}

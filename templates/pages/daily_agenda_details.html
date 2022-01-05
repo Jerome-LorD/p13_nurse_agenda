@@ -1,7 +1,10 @@
 {% extends 'pages/daily_agenda.html' %}
 {% comment %} {% load nurse_filters %} {% endcomment %}
 
+{% block title %}IDE Agenda -- Planning du jour{% endblock title %}
+
 {% block agenda %}
+
 {{warn}}
 <p>Planning du cabinet <b>{{cabinet|capfirst}}</b>. {{day_name|capfirst}} {{day}}/{{month}}/{{year}} : Il y à <b>{{booked_hours|length}}</b> rdv aujourd'hui</p>
  
@@ -16,42 +19,6 @@
 		</tr>
 		{% for hour in hours %} 
 			{% url 'nurse:new_event' year month day hour|time:'H:i' as new_event %}
-			{% comment %} {% if hour|time:"H" == hunik and hour|time:"i" < '15' %}
-				<tr class="rdv">
-					<td id="{{hunik}}" class="rdv" width="7em">
-						<a class="rowlink" href="{% if hour|time:'H:i' not in booked_hours %} {{new_event}}{% else %}{% for i in appointments_per_day %}{% if request.user.id in associates and hour|time:'H:i' in i.get_html_url %} {{i.get_html_url}} {% endif %}{% endfor %}{% endif %}">
-							<b>{{hour}}</b> 
-						</a>
-					</td>
-					<td class="rdv">
-						<b></b> {% for rdv in appointments_per_day %} {% if request.user.id in associates  and rdv.date|time:'H:i' == hour|time:'H:i' %} {{rdv.name}} 
-						<br>
-						<b>Adresse A</b> :  {{rdv.care_address}}   {% endif %}{% endfor %} 
-					</td>
-					<td class="rdv">
-						{% for rdv in appointments_per_day %} {% if request.user.id in associates and rdv.date|time:'H:i' == hour|time:'H:i' %}{{rdv.cares}}{% endif %}{% endfor %} 
-					</td>
-				</tr>
-
-			{% elif hour|time:"H" == hunik and hour|time:"i" < '51' %}
-
-				<tr style="background-color: #c2c2c2;" class="rdv">
-					<td id="{{hunik}}" class="rdv" width="7em">
-						<a class="rowlink" href="{% if hour|time:'H:i' not in booked_hours %} {{new_event}}{% else %}{% for i in appointments_per_day %}{% if request.user.id in associates  and hour|time:'H:i' in i.get_html_url %} {{i.get_html_url}} {% endif %}{% endfor %}{% endif %}">
-							<b>{{hour}}</b>
-						</a>
-					</td>
-					<td class="rdv">
-						{% for rdv in appointments_per_day %} {% if request.user.id == rdv.user_id and rdv.date|time:'H:i' == hour|time:'H:i' %} {{rdv.name}} 
-						<br>
-						<b>Adresse B</b> :  {{rdv.care_address}} {% endif %}{% endfor %} 
-					</td>
-					<td class="rdv">
-						{% for rdv in appointments_per_day %} {% if request.user.id == rdv.user_id and rdv.date|time:'H:i' == hour|time:'H:i' %}{{rdv.cares}}{% endif %}{% endfor %}  
-					</td>
-				</tr>  {% endcomment %}
-
-			{% comment %} {% elif hour|time:"i" < '15' %} {% endcomment %}
 				<tr class="rdv">
 					<td class="rdv" width="7em">
 						<a class="rowlink" href="{% if hour|time:'H:i' not in booked_hours %} {{new_event}}{% else %}{% for event in appointments_per_day %}{% if  request.user.id in associates and hour|time:'H:i' in event.get_html_url %} {{event.get_html_url}} {% endif %}{% endfor %}{% endif %}">
@@ -72,33 +39,6 @@
 						{% for event in appointments_per_day %} {% if request.user.id == event.user_id and event.date|time:'H:i' == hour|time:'H:i' %}{{event.cares}}{% endif %}{% endfor %} 
 					</td>
 				</tr>
-
-			{% comment %} {%else%} {#  #}
-
-				<tr class="rdv">
-					<td class="rdv" width="8em">
-						<a class="rowlink" href="{% if hour|time:'H:i' not in booked_hours %} {{new_event}}{% else %}{% for i in appointments_per_day %}{% if request.user.id in associates and hour|time:'H:i' in i.get_html_url %} {{i.get_html_url}} {% endif %}{% endfor %}{% endif %}">
-							<b>{{hour}}</b>
-						</a>
-					</td>
-					<td class="rdv"> 
-						{% for rdv in appointments_per_day %} 
-							{% if request.user.id in associates  and rdv.date|time:'H:i' == hour|time:'H:i' %}  
-								{{rdv.name}} 
-						<br>
-							<b>Adresse D</b> :  {{rdv.care_address}} {{rdv.id}} 
-							{% endif %}
-						{% endfor %} 
-					</td>
-					<td class="rdv">
-						{% for i in appointments_per_day %} 
-							{% if request.user.id in associates and i.date|time:'H:i' == hour|time:'H:i' %}
-								{{i.cares}}
-							{% endif %}
-						{% endfor %}  
-					</td>
-				</tr>
-			{%endif%} {% endcomment %}
 		{% endfor %}
 	</tbody>
 </table>

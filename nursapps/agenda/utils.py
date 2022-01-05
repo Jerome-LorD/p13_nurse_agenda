@@ -1,6 +1,7 @@
 """Agenda utils module."""
 import datetime as dt
 import calendar
+
 from datetime import datetime, timedelta
 from calendar import HTMLCalendar
 from nursapps.agenda.models import Event
@@ -19,7 +20,7 @@ class CalEvent(HTMLCalendar):
 
         super().__init__()
 
-    def formatday(self, day, events):
+    def formatday(self, day, events) -> str:
         """Format day."""
         associate = Associate.objects.filter(user_id=self.user.id).first()
         if associate:
@@ -34,48 +35,48 @@ class CalEvent(HTMLCalendar):
             date__day=day,
             user_id__in=associates,
         )
-        tot_event_by_id = event.count()
+        total_event = event.count()
 
         day_ = int(datetime.today().strftime("%d"))
         month_ = int(datetime.today().strftime("%m"))
 
         if day != 0 and day != day_:
-            if tot_event_by_id == 0:
+            if total_event == 0:
                 return (
-                    f"<td><a href='{day}' class='dayst'>"
+                    f"<td><a href='{day}' class='dayst' id='the-{day}'>"
                     f"<span class='date'>{day}</span>  </a></td>"
                 )
             else:
                 return (
-                    f"<td><a href='{day}' class='dayst'><span class='date'>"
-                    f"{day}</span><span class='nb_rdv'>{tot_event_by_id}"
-                    f" visite{pluralize(tot_event_by_id)}</span></a></td>"
+                    f"<td><a href='{day}' class='dayst' id='the-{day}'><span class='date'>"
+                    f"{day}</span><span class='nb_rdv'>{total_event}"
+                    f" visite{pluralize(total_event)}</span></a></td>"
                 )
         elif day != 0 and day == day_ and self.month == month_:
             return (
-                f"<td class='date-today'><a href='{day}' class='dayst'>"
-                f"<span class='date'>{day}</span><span class='nb_rdv'>{tot_event_by_id}"
-                f" visite{pluralize(tot_event_by_id)}</span></a></td>"
-                if tot_event_by_id > 0
-                else f"<td class='date-today'><a href='{day}' class='dayst'>"
+                f"<td class='date-today'><a href='{day}' class='dayst' id='the-{day}'>"
+                f"<span class='date'>{day}</span><span class='nb_rdv'>{total_event}"
+                f" visite{pluralize(total_event)}</span></a></td>"
+                if total_event > 0
+                else f"<td class='date-today'><a href='{day}' class='dayst' id='the-{day}'>"
                 f"<span class='date'>{day}</span><span class='nb_rdv'> </span></a></td>"
             )
         elif day != 0 and self.month != month_:
-            if tot_event_by_id == 0:
+            if total_event == 0:
                 return (
-                    f"<td><a href='{day}' class='dayst'><span class='date'>"
+                    f"<td><a href='{day}' class='dayst' id='the-{day}'><span class='date'>"
                     f"{day}</span></a></td>"
                 )
             else:
                 return (
-                    f"<td><a href='{day}' class='dayst'><span class='date'>{day}"
-                    f"</span><span class='nb_rdv'> {tot_event_by_id} "
-                    f"visite{pluralize(tot_event_by_id)}</span></a></td>"
+                    f"<td><a href='{day}' class='dayst' id='the-{day}'><span class='date'>{day}"
+                    f"</span><span class='nb_rdv'> {total_event} "
+                    f"visite{pluralize(total_event)}</span></a></td>"
                 )
         else:
             return f"<td class='noday'></td>"
 
-    def formatweek(self, theweek, events):
+    def formatweek(self, theweek, events) -> str:
         """Format week."""
         week = ""
         for datas, weekday in theweek:
@@ -83,7 +84,7 @@ class CalEvent(HTMLCalendar):
 
         return f"<tr> {week} </tr>"
 
-    def formatmonth(self, withyear=True):
+    def formatmonth(self, withyear=True) -> str:
         """Format month."""
         events = Event.objects.filter(date__year=self.year, date__month=self.month)
         cal = (
@@ -97,7 +98,7 @@ class CalEvent(HTMLCalendar):
         return cal
 
 
-def last_day(year, month):
+def last_day(year, month) -> int:
     """Return the last day number of the month."""
     return calendar.monthrange(year, month)[1]
 

@@ -13,11 +13,6 @@ import os
 import psycopg2.extensions
 import sentry_sdk
 
-# if "/app" in os.environ["HOME"]:
-#     import django_heroku
-
-#     django_heroku.settings(locals())
-
 
 from sentry_sdk.integrations.django import DjangoIntegration
 from pathlib import Path

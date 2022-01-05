@@ -1,13 +1,14 @@
 """Agenda view module."""
 import datetime as dt
-from django.contrib.auth.models import User
 import numpy
+import calendar
 
+from django.contrib.auth.models import User
 from django.http.response import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
-from nursapps.agenda.forms import EditEventForm, formEvent
+from nursapps.agenda.forms import EditEventForm, FormEvent
 from nursapps.agenda.models import Event
 from nursapps.cabinet.models import Associate
 from datetime import datetime, timedelta, date
@@ -31,19 +32,20 @@ from nursapps.agenda.utils import (
 )
 
 
-# @login_required
+def error_404(request, exception):
+    """Error 404 view."""
+    return render(request, "pages/404.html", status=404)
+
+
 def index(request):
     """Index view."""
     now = datetime.now()
-    cal = CalEvent(request.user, now.year, now.month)
-    html_cal = cal.formatmonth(withyear=True)
     return render(
         request,
         "pages/home.html",
         {
             "current_month": now.month,
             "current_year": now.year,
-            "html_calendar": mark_safe(html_cal),
         },
     )
 
@@ -67,12 +69,6 @@ def agenda(request, year, month):
     user_date_joined = request.user.date_joined
     user_date_joined = datetime.strptime(str(user_date_joined)[:10], "%Y-%m-%d").date()
 
-    # associate = Associate.objects.filter(user_id=request.user.id).first()
-    # associates = Associate.objects.get_associates(associate.id)
-    # associates = [associate.id for associate in associates]
-
-    # breakpoint()
-
     pmb = prev_month_base(year, month, day=1)
     nmb = next_month_base(year, month, day=1)
     prev_month_n = prev_month_name(pmb)
@@ -81,6 +77,8 @@ def agenda(request, year, month):
     next_month_num = next_month_number(nmb)
     prev_y = prev_year(year, month)
     next_y = next_year(year, month)
+
+    current_month_name = calendar.month_name[month]
 
     return render(
         request,
@@ -98,7 +96,7 @@ def agenda(request, year, month):
             "user_id": user_id,
             "current_month": now.month,
             "current_year": now.year,
-            # "associates": associates,
+            "current_month_name": current_month_name,
         },
     )
 
@@ -137,7 +135,6 @@ def daily_agenda(request, year, month, day):
             )
         )
     now = datetime.now()
-    # event = Event.objects.filter(user_id=request.user.id).first()
     associate = Associate.objects.filter(user_id=request.user.id).first()
     if associate:
         associates = Associate.objects.get_associates(associate.cabinet_id)
@@ -174,10 +171,6 @@ def daily_agenda(request, year, month, day):
     ]
 
     day_name = datetime.strftime(date(year, month, day), "%A")
-    heure_unik = datetime.strftime(datetime.now(), "%H")
-    current_hour = now.hour
-
-    # breakpoint()
 
     nextday = next_day(year, month, day)
     prevday = prev_day(year, month, day)
@@ -193,7 +186,6 @@ def daily_agenda(request, year, month, day):
         "booked_hours": booked_hours,
         "uid": user_id,
         "day_name": day_name,
-        # "hunik": current_hour,
         "current_month": now.month,
         "current_year": now.year,
         "associates": associates,
@@ -245,7 +237,7 @@ def create_events(request, year, month, day, hour, event_id=None):
 
     hour_, minute_ = (int(i) for i in hour.split(":"))
 
-    form = formEvent(
+    form = FormEvent(
         request.POST or None,
         user=request.user,
         instance=event,
@@ -262,8 +254,6 @@ def create_events(request, year, month, day, hour, event_id=None):
     if request.POST and form.is_valid():
         form.clean_cares()
         form.clean_day_per_week()
-        # form.clean_date(associates)
-        # breakpoint()
         if str(event.date)[11:16] in hours:
             event.create_events(user_id=request.user.id)
             return HttpResponseRedirect(
@@ -307,7 +297,7 @@ def delete_event(request, year, month, day, hour, event_id):
     hour_rdv = str(hour)
     activ = Event.objects.filter(id__iregex=r"^%s$" % event_id)
     event = get_object_or_404(Event, pk=event_id)
-    group_event = Event.objects.filter(group_id=event.group_id)
+    group_event = Event.objects.filter(events_id=event.events_id)
 
     if request.method == "POST":
         for event in group_event:
@@ -341,7 +331,6 @@ def delete_event(request, year, month, day, hour, event_id):
 
 def edit_event(request, year, month, day, hour, event_id):
     """Edit event."""
-    print("DANS EDIT EVENT")
     now = datetime.now()
 
     associate = Associate.objects.filter(user_id=request.user.id).first()
@@ -367,7 +356,7 @@ def edit_event(request, year, month, day, hour, event_id):
     ).order_by("name")
 
     event = get_object_or_404(Event, pk=event_id)
-    group_event = Event.objects.filter(group_id=event.group_id)
+    group_event = Event.objects.filter(events_id=event.events_id)
 
     day_events = [event.id for event in event_per_day]
     hour_, minute_ = (int(i) for i in hour.split(":"))
@@ -394,7 +383,6 @@ def edit_event(request, year, month, day, hour, event_id):
     edit_choice = request.POST.get("choice_event_edit")
 
     if request.POST and form.is_valid():
-        # form.clean_date()
         already = event.update_events(group_event, edit_choice)
         if not already:
             return HttpResponseRedirect(

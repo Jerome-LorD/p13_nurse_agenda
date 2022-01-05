@@ -1,4 +1,5 @@
 """Cabinet module."""
+from django.views.decorators.vary import vary_on_headers
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from nursapps.cabinet.models import Associate, Cabinet, RequestAssociate
@@ -21,24 +22,22 @@ from datetime import datetime
 now = datetime.now()
 
 
+@vary_on_headers("User-Agent")
 def autocomplete(request):
     """Jquery autocomplete response."""
-    if request.is_ajax() and request.method == "GET":
+    if request.method == "GET":
         cabinet = request.GET.get("term", "")
         cabinets = Cabinet.objects.filter(name__icontains="%s" % cabinet).order_by(
             "id"
         )[:10]
-    return JsonResponse([{"name": item.name} for item in cabinets], safe=False)
+    return JsonResponse([{"name": cabinet.name} for cabinet in cabinets], safe=False)
 
 
 def create_new_cabinet(request):
     """Create new cabinet."""
-    # first_name = request.user.username
-    # cabin = None
     sender = None
     new_cabinet = None
     associate = None
-    # lst_associates_id = None
     cab_id = None
     cab_name = None
     association_request = RequestAssociate.objects.filter(receiver_id=request.user.id)
@@ -132,10 +131,7 @@ def ask_for_associate(request):
 
 def confirm_associate(request):  # valid_association
     """Confirm associate."""
-    first_name = request.user.username
-    cabin = None
     sender = None
-    new_cabinet = None
     associate = None
     lst_associates_id = None
     cab_id = None

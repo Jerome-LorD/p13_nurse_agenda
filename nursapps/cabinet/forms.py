@@ -66,6 +66,7 @@ class AssociationValidation(forms.Form):
     choice = forms.ChoiceField(widget=forms.RadioSelect, choices=CHOICES)
 
     def clean(self):
+        """Clean confirm."""
         confirm = self.cleaned_data["confirm"]
         if not confirm:
             raise forms.ValidationError("Il faut confirmer pour valider.")
