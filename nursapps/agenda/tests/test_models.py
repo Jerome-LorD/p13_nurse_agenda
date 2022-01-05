@@ -184,6 +184,7 @@ class TestEvent(TestCase):
         """Test update event at only one date and twice a day.
 
         So we have two events on 26/12:
+
         datetime.datetime(2021, 12, 26, 6, 0)
         datetime.datetime(2021, 12, 26, 18, 0)
         And the point is to change the first one from 6 a.m. to 7 a.m. and leave the
