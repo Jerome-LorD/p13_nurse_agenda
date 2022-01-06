@@ -23,12 +23,9 @@
 					<div id="save">
 						{% if event_id %}
 							<h4>Éditer la visite N°{{ event_id }} </h4>
+						{% endif %}
 							<a class="right btn btn-light" href="{% url 'nurse:daily_agenda' year month day %}"> Annuler </a>
 							<input type="submit" class="right btn btn-success" name="" value="Enregistrer">
-						{% else %}
-							<a class="right btn btn-light" href="{% url 'nurse:daily_agenda' year month day %}"> Annuler </a>
-							<input type="submit" class="right btn btn-success" name="" value="Enregistrer">				
-						{% endif %}
 					</div>
 				</div>	
 			</form>	
@@ -39,6 +36,7 @@
 						<input type="submit" value="Supprimer" class="btn btn-warning">
 						</a>
 				</div>
+				
 			{% endif %}
 
 		{% else %}

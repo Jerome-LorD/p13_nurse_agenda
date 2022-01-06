@@ -9,6 +9,7 @@
     <div class="supp">
       <form method="post">{% csrf_token %}
         <h4>Supprimer définitivement le rdv N°{{ event_id }} du {{now|date}} ?</h4>
+        <p>La suppression concerne cet événement (et les événements suivant s'il fait partie d'un groupe).</p>
         
         <a href="{% url 'nurse:del_event' year month day hour_rdv event_id %}">
         <input type="submit" value="Oui" class="btn btn-warning"></a>

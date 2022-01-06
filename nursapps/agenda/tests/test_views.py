@@ -17,17 +17,17 @@ class TestAgendaViews(TestCase):
 
     def setUp(self):
         """Set Up."""
-        self.user = User.objects.create_user(
+        self.bill = User.objects.create_user(
             username="bill", email="bill@bool.com", password="poufpouf"
         )
 
         self.client = Client()
 
         cabinet = Cabinet.objects.create(name="cabbill")
-        self.user.is_cabinet_owner = True
-        self.user.save()
-        Associate.objects.create(cabinet_id=cabinet.id, user_id=self.user.id)
-        associate = Associate.objects.filter(user_id=self.user.id).first()
+        self.bill.is_cabinet_owner = True
+        self.bill.save()
+        Associate.objects.create(cabinet_id=cabinet.id, user_id=self.bill.id)
+        associate = Associate.objects.filter(user_id=self.bill.id).first()
 
         associates = Associate.objects.get_associates(associate.cabinet_id)
         self.associates = [associate.id for associate in associates]
@@ -57,18 +57,18 @@ class TestAgendaViews(TestCase):
                 name=name,
                 care_address=care_address,
                 cares=cares,
-                user_id=self.user.id,
+                user_id=self.bill.id,
                 events_id=events_id,
                 date=date + timedelta(days=i),
             )
 
-        self.second_user = User.objects.create_user(
+        self.bob = User.objects.create_user(
             username="bob", email="bob@bebo.com", password="poufpouf"
         )
 
     def test_view_agenda_uses_correct_template(self):
         """Test view agenda uses correct template."""
-        self.client.force_login(self.user)
+        self.client.force_login(self.bill)
 
         now = datetime.now()
         response = self.client.get(
@@ -82,7 +82,7 @@ class TestAgendaViews(TestCase):
 
     def test_view_create_event_uses_correct_template(self):
         """Test view create event uses correct template."""
-        self.client.force_login(self.user)
+        self.client.force_login(self.bill)
 
         now = datetime.now()
         hour = "06:00"
@@ -103,7 +103,7 @@ class TestAgendaViews(TestCase):
 
     def test_view_edit_event_uses_correct_template(self):
         """Test view edit event uses correct template."""
-        self.client.force_login(self.user)
+        self.client.force_login(self.bill)
 
         now = datetime.now()
         hour = "06:00"
@@ -120,7 +120,7 @@ class TestAgendaViews(TestCase):
 
     def test_view_daily_agenda_uses_correct_template(self):
         """Test view daily agenda uses correct template."""
-        self.client.force_login(self.user)
+        self.client.force_login(self.bill)
 
         now = datetime.now()
         response = self.client.get(
@@ -134,9 +134,15 @@ class TestAgendaViews(TestCase):
         self.assertTemplateUsed(response, "pages/daily_agenda_details.html")
 
     def test_view_redirect_to_profile_if_user_not_cabinet_owner(self):
-        self.client.force_login(self.second_user)
-        self.assertFalse(self.second_user.is_cabinet_owner)
+        """Test view redirect to profile if user not cabinet owner."""
+        self.client.force_login(self.bob)
+        self.assertFalse(self.bob.is_cabinet_owner)
 
         # Bob tries to use the app
         response = self.client.get("/agenda/2022/01/10/")
         self.assertRedirects(response, "/auth/accounts/profile/")
+
+    def test_view_error_404(self):
+        """Test view error_404 return expected status code."""
+        response = self.client.get("/agenda/blablablibli/")
+        self.assertEqual(response.status_code, 404)

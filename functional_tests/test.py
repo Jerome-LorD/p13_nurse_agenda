@@ -33,6 +33,8 @@ class SeleniumTests(StaticLiveServerTestCase):
     def tearDownClass(cls):
         """Tear down class."""
         cls.browser.quit()
+        if os.name == "nt":
+            os.system("taskkill /f /im firefox.exe /T")
         super().tearDownClass()
 
     def test_login_redirect_to_profile(self):

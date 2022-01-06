@@ -101,30 +101,6 @@ def agenda(request, year, month):
     )
 
 
-@login_required(redirect_field_name="home")
-def home(request):
-    """Home view."""
-    year = datetime.today().year
-    month = datetime.today().month
-    day = datetime.today().day
-    ndm = datetime.strftime(date(year, month, day), "%B")
-    nomdujour = datetime.strftime(date(year, month, day), "%A")
-    cabinet = request.user.groups.values_list("name", flat=True).first()
-
-    return render(
-        request,
-        "pages/home.html",
-        {
-            "year": year,
-            "month": month,
-            "day": day,
-            "cabinet": cabinet,
-            "nomdujour": nomdujour,
-            "ndm": ndm,
-        },
-    )
-
-
 @login_required
 def daily_agenda(request, year, month, day):
     """Daily agenda."""

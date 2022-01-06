@@ -51,10 +51,9 @@ def create_new_cabinet(request):
     if associate:
         # retrieves the list of IDs of a firm's partners in order to display their
         # names in the table on the profile page.
-        lst_associates_id = Associate.objects.get_associates(associate.id)
-        cab_id = associate.cabinet_id
-        cabinet = Cabinet.objects.filter(pk=cab_id).first()
-        cab_name = cabinet.name
+        Associate.objects.get_associates(associate.id)
+        cabinet_id = associate.cabinet_id
+        cabinet = Cabinet.objects.filter(pk=cabinet_id).first()
 
     form = CreateCabinet(request.POST)
     if request.method == "POST":
@@ -76,7 +75,7 @@ def create_new_cabinet(request):
                 associate = Associate.objects.create(
                     cabinet_id=cabinet.id, user_id=request.user.id
                 )
-                new_cabinet = cabinet.name
+                # new_cabinet = cabinet.name
                 return HttpResponseRedirect(
                     reverse(
                         "nursauth:profile",
@@ -88,7 +87,7 @@ def create_new_cabinet(request):
         "cab": associate,
         "cabinet": cabinet,
         "sender": sender,
-        "new_cabinet": new_cabinet,
+        "new_cabinet": cabinet.name,
         "cab_id": cab_id,
         "cab_name": cab_name,
     }
@@ -101,14 +100,14 @@ def ask_for_associate(request):
     if request.method == "POST":
         form = SearchForCabinet(request.POST)
         if form.is_valid():
-            askfor = request.POST.get("search_for_cabinet")
-            cabinet = Cabinet.objects.filter(name=askfor)
+            cabinet_name = request.POST.get("search_for_cabinet")
+            cabinet = Cabinet.objects.filter(name=cabinet_name)
             cabinet = cabinet.first()
-            cabass = Associate.objects.filter(cabinet_id=cabinet.id).first()
+            cabinet_associate = Associate.objects.filter(cabinet_id=cabinet.id).first()
             obj, _ = RequestAssociate.objects.get_or_create(
                 sender_id=request.user.id,
-                receiver_id=cabass.user_id,
-                cabinet_id=cabass.cabinet_id,
+                receiver_id=cabinet_associate.user_id,
+                cabinet_id=cabinet_associate.cabinet_id,
             )
             return HttpResponseRedirect(
                 reverse(
