@@ -372,8 +372,10 @@ class TestEvent(TestCase):
                 events_id=self.events.id,
                 date=dates[index],
             )
-        events = Event.objects.filter(events_id=self.events.id)
-        all_dates = [event.date for event in events]
+        events = Event.objects.filter(events_id=self.events.id).order_by("date")
+
+        dates = [event.date for event in events]
+
         self.assertEqual(
             [
                 datetime(2021, 12, 31, 6, 0),
@@ -386,7 +388,7 @@ class TestEvent(TestCase):
                 datetime(2022, 1, 2, 12, 0),
                 datetime(2022, 1, 2, 18, 0),
             ],
-            all_dates,
+            dates,
         )
 
     def test_wrong_url_leads_to_404_status_code(self):
