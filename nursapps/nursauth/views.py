@@ -1,5 +1,6 @@
 """Nursauth views module."""
-from django.shortcuts import render
+from django.http import HttpResponse
+from django.shortcuts import redirect, render
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import authenticate
 from django.contrib import messages
@@ -13,16 +14,18 @@ from .forms import (
     NewLoginForm,
 )
 from nursapps.cabinet.forms import (
-    CreateCabinet,
-    AssociationValidation,
+    CreateCabinetForm,
+    AssociationValidationForm,
+    # DeclineAssociationForm,
 )
 
 from datetime import datetime
 
+now = datetime.now()
+
 
 def inscript(request):
     """Inscript view."""
-    now = datetime.now()
     if request.method == "POST":
         form = InscriptForm(request.POST)
         if form.is_valid():
@@ -48,7 +51,6 @@ def inscript(request):
 
 def login(request):
     """Login view."""
-    now = datetime.now()
     if request.method == "POST":
         form = NewLoginForm(request.POST)
         email = request.POST.get("email")
@@ -81,53 +83,31 @@ def login(request):
 
 @login_required
 def user_profile(request):
-    """Account.
-
-    request.session["cabinet_name"] = cabinet.name
-
-
-    """
-    sender = None
-    associate = None
-    lst_associates_id = None
-    cab_id = None
-    cab_name = None
-    now = datetime.now()
-
-    cab_form = CreateCabinet(request.POST)
-    valid_form = AssociationValidation(request.POST)
-    association_request = RequestAssociate.objects.filter(receiver_id=request.user.id)
-    assreq = association_request.values_list("sender_id", flat=True)
-
+    """Account."""
+    context = {"current_month": now.month, "current_year": now.year}
     sender_request = RequestAssociate.objects.filter(sender_id=request.user.id)
-    if assreq:
-        sender = User.objects.filter(pk__in=[i for i in assreq])
+    association_request = RequestAssociate.objects.filter(receiver_id=request.user.id)
+    association_request = association_request.values_list("sender_id", flat=True)
+
+    if association_request:
+        sender = User.objects.filter(pk__in=[i for i in association_request])
+        context["sender"] = sender
     associate = Associate.objects.filter(user_id=request.user.id)
     associate = associate.first()
 
-    if associate:
-        # obtains the list of identifiers of the partners of a firm in order to display
-        # their names in the table of the profile page.
-        lst_associates_id = Associate.objects.get_associates(associate.cabinet_id)
-        cab_id = associate.cabinet_id
-        cabinet = Cabinet.objects.filter(pk=cab_id).first()
-        cab_name = cabinet.name
-
+    if sender_request.exists():
+        context.update(user_send_request_for_association=sender_request)
+    elif Associate.objects.filter(user=request.user).exists():
+        associate = Associate.objects.get(user=request.user)
+        if associate or request.user.is_cabinet_owner or sender_request or sender:
+            associates = Associate.objects.get_associates(associate.cabinet.id)
+            confirm_form = AssociationValidationForm(request.POST)
+            context.update(
+                associates=associates,
+                user_send_request_for_association=sender_request,
+                confirm_form=confirm_form,
+            )
     else:
-        cab_form = CreateCabinet()
-        valid_form = AssociationValidation()
+        return redirect("cabinet:create")
 
-    context = {
-        "first_name": request.user.username,
-        "cab_form": cab_form,
-        "valid_form": valid_form,
-        "cab": associate,
-        "sender": sender,
-        "associates": lst_associates_id,
-        "cab_id": cab_id,
-        "cab_name": cab_name,
-        "reqass": sender_request,
-        "current_year": now.year,
-        "current_month": now.month,
-    }
     return render(request, "registration/profile.html", context)

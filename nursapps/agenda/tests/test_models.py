@@ -63,10 +63,6 @@ class TestEvent(TestCase):
                 date=date + timedelta(days=i),
             )
 
-    def test_user_is_cabinet_owner(self):
-        """Test if the current user is a cabinet owner."""
-        self.assertTrue(self.user.is_cabinet_owner)
-
     def test_create_weekly_event_with_delta_hour(self):
         """Create a weekly event with delta in hour.
 

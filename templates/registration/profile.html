@@ -5,11 +5,9 @@
 
 {% block profile %}
 
-<script>
+{% comment %} <script>
     const autocomp_source = "{% url 'cabinet:autocomplete' %}";
-</script>
-
-
+</script> {% endcomment %}
         <div class="row justify-content-center">
             <div class="col-xl-10 col-lg-12 col-md-9">
                 <div class="card o-hidden border-0 shadow-lg my-5">
@@ -31,39 +29,22 @@
                         </div>
                     </div>
                 </div>
+                {% if not request.user.is_cabinet_owner and not user_send_request_for_association and not request.user in associates %}
 
-                {% if not request.user.is_cabinet_owner and not reqass and not request.user in associates %}
-                    
-                    <h3>Création ou affiliation à un cabinet</h3>
-                    <p>C'est à partir du nom de votre cabinet que vous pourrez partager vos événements commun (et utiliser l'application).<br>
-                    Créer des événements sans ce nom de cabinet n'est pas possible.
-                    <br>
-                    Le nom de cabinet est un simple identifiant sur le site et vous pouvez l'intituler comme vous le souhaitez tant qu'il est unique 
-                    (il ne doit pas exister dans la base de données).</p>
-                    <p>Vous pourrez savoir si l'intitulé de cabinet est disponible en utilisant le formulaire ci-dessous. Si le nom apparait et que c'est le cabinet
-                    que vous voulez créer, vous pouvez faire une demande d'association à son créateur qui en sera notifié. Il devra alors valider la demande et 
-                    votre accès sera complet, vous aurez accès à la créations d'évenements dans le cadre d'un planning partagé.</p>
+                    {% block cabinet_create %}{% endblock cabinet_create %}
 
-
-
-                    <p>Saisissez le nom de votre cabinet, s'il apparait dans l'autocomplete c'est qu'il existe déjà et vous 
-                    devez faire une demande à son propriétaire.<br>Sinon, vous pouvez le créer.</p>
-
-                    <form method="post" action="{% url 'cabinet:create' %}">
+                {% elif not request.user.is_cabinet_owner and user_send_request_for_association %} {% comment %} user_send_request_for_association {% endcomment %}
+                    <p>La demande vient d'être envoyée, votre accès au planning sera déverrouillé quand elle sera acceptée.<br>
+                    Vous avez accès à un unique cabinet.</p><br>
+                    <form action="{% url 'cabinet:cancel_associate_demand' %}" method="post">
                         {% csrf_token %}
-                        {{ cab_form.as_ul }}<br><br><br>
-                        <input type="submit" value="Vérifier la disponibilité" class="btn btn-success">
-                    </form>
-
-                <script src="{% static 'js/autocomplete.js' %}"></script>
-
-                {% elif not request.user.is_cabinet_owner and reqass %}
-                La demande vient d'être envoyée, vous serez averti par email quand elle sera acceptée.<br>
-                <!-- /!\ La demande est envoyée depuis [date et heure] -->
+                        <input type="hidden" name="cancel" value="canceled">
+                        <input  class="btn btn-warning" type="submit" value="Annuler">   
+                    </form><br>
 
                 {% elif request.user.is_cabinet_owner and cabinet %}
                     <h3>Votre cabinet : {{cabinet.name.capitalize}}</h3>
-                    Vous seul avez la propriété de ce cabinet pour le moment 1.
+                    Vous seul avez la propriété de ce cabinet pour le moment.
                     Pour ajouter un associé, vous recevrez une demande de sa part dans cet espace (vous serez averti par email).
                     Après validation de la demande par vos soins, tous les associés recevront les demandes et devront valider une nouvelle association.
                     <!-- Cabinet creation confirmed -->
@@ -95,23 +76,30 @@
                             {% endfor %}                                                   
                         </tbody>
                     </table>
-                    
+
                     {% if sender %}
-                        {% for i in sender %}
-
-                        <p>Une demande d'association de la part de <b>{{i.email}}</b> attend une action de votre part :</p>
-                        <form action="{% url 'cabinet:confirm_associate' %}" method="post">
-                            {% csrf_token %}
-                        <input type="hidden"
-                            name="{{ valid_form.confirm.name }}"
-                            id="{{ valid_form.confirm.id_for_label }}"
-                            {% if valid_form.confirm.value is None %}value="{{ i.id }}"{% endif %}
-                            maxlength="{{ valid_form.confirm.field.max_length }}"
-                            {% if valid_form.confirm.field.required %}required{% endif %}>
-                            {{valid_form.choice}}
-                        <input type="submit" value="Accepter la demande">    
-                        </form><br>
-
+                        {% for user in sender %}
+                            <p>Vous avez une demande d'association de la part de <b>{{user.email}}</b> :<br>Que voulez-vous faire ?</p>
+                            <div class="form-group mb-2">
+                                <form action="{% url 'cabinet:confirm_associate' %}" method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden"
+                                        name="{{ confirm_form.confirm.name }}"
+                                        id="{{ confirm_form.confirm.id_for_label }}"
+                                        {% if confirm_form.confirm.value is None %}value="{{ user.id }}"{% endif %}
+                                        maxlength="{{ confirm_form.confirm.field.max_length }}"
+                                        {% if confirm_form.confirm.field.required %}required{% endif %}>
+                                        {{confirm_form.choice}}
+                                    <input class="left btn btn-success" type="submit" value="Accepter la demande">
+                                </form>
+                            </div>
+                            <div class="form-group mx-sm-3 mb-2">
+                                <form action="{% url 'cabinet:decline_associate' %}" method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="decline" value="{{ user.id }}">
+                                    <input class="btn btn-dark ml-2" type="submit" value="refuser">   
+                                </form><br>
+                            </div>        
                         {% endfor %}
                     {% endif %}
                 {% endif %}

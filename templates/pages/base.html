@@ -155,6 +155,7 @@
                         {% block profile %}{% endblock profile %} 
                         {% comment %} {% block original-content %}{% endblock original-content %} {% endcomment %}
                         {% block main_agenda %}{% endblock main_agenda %}
+                        {% comment %} {% block cabinet_create %}{% endblock cabinet_create %} {% endcomment %}
                         {% block daily_agenda %}{% endblock daily_agenda %}
                         {% block priserdv %}{% endblock priserdv %}
                         {% block del_event %}{% endblock del_event %}
@@ -168,8 +169,8 @@
 
 
                 
-                {% block home %}{% endblock home %}
-                {% block error404 %}{% endblock error404 %}
+                    {% block home %}{% endblock home %}
+                    {% block error404 %}{% endblock error404 %}
                     {% block reset %}{% endblock reset %}
                     {% block reset_done %}{% endblock reset_done %}
                     {% block reset-confirm %}{% endblock reset-confirm %}

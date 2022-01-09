@@ -2,15 +2,15 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from nursapps.cabinet.models import Associate, Cabinet, RequestAssociate
-from nursapps.cabinet.forms import (
-    CreateCabinet,
-    SearchForCabinet,
-    AssociationValidation,
-)
-
 from django.test import Client
 from django.urls import reverse
-from django.http.response import HttpResponseRedirect
+from django.shortcuts import redirect
+from nursapps.cabinet.forms import (
+    CreateCabinetForm,
+    SearchCabinetForm,
+    AssociationValidationForm,
+)
+
 
 User = get_user_model()
 
@@ -49,15 +49,6 @@ class TestCabinetViews(TestCase):
         self.assertTemplateUsed(response, "registration/profile.html")
 
     def test_view_ask_for_associate_uses_correct_template(self):
-        """Test view ask for associate uses correct template."""
-        self.client.force_login(self.bill)
-        askfor_url = reverse("cabinet:askfor")
-        response = self.client.get(askfor_url)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "registration/askfor.html")
-
-    def test_view_ask_for_associate_(self):  ###########################################
         """Test view ask for associate ."""
         self.client.force_login(self.bill)
         askfor_url = reverse("cabinet:askfor")
@@ -87,25 +78,70 @@ class TestCabinetViews(TestCase):
     def test_view_user_create_new_cabinet(self):
         """Test view user create new cabinet."""
         self.client.force_login(self.bob)
-
+        url = reverse("cabinet:create")
+        response = self.client.get(url)
+        # After Bob's inscription, he wants to use the app
         self.assertFalse(self.bob.is_cabinet_owner)
 
         # but he has to create a cabinet to do so
-        cabinet = Cabinet.objects.create(name="cabob")
+        # and he wants his own
+        self.assertTemplateUsed(response, "registration/create_cabinet.html")
+        cabinet_name = "cabob"
+        form = CreateCabinetForm(data={"cabinet_name": cabinet_name})
+        self.assertTrue(form.is_valid())
+        self.assertFalse(Cabinet.objects.filter(name=cabinet_name).exists())
+        Cabinet.objects.create(name="cabob")
         self.bob.is_cabinet_owner = True
         self.bob.save()
-        self.assertTrue(self.bob.is_cabinet_owner)
+        self.assertTemplateUsed(response, "registration/profile.html")
 
-        Associate.objects.create(cabinet_id=cabinet.id, user_id=self.bob.id)
-        associate = Associate.objects.filter(user_id=self.bob.id).first()
+    def test_view_ask_for_associate_user_can_use_datas_on_shared_planning(self):
+        """Test if user can use datas on shared planning.
 
-        associates = Associate.objects.get_associates(associate.cabinet_id)
-        self.associates = [associate.id for associate in associates]
-        response = self.client.get("/agenda/2022/01/10/")
+        A new user who wants to see the data of a cabinet that is not his own must ask
+        its owner to become an associate (or replacement).
+        """
+        self.client.force_login(self.bob)
+        self.assertFalse(self.bob.is_cabinet_owner)
+
+        # he wants to see and use the datas on bill's cabinet
+        cabinet = "cabbill"
+        # Bob search for "cabill" cabinet
+        form = SearchCabinetForm(data={"cabinet_name": cabinet})
+        self.assertTrue(form.is_valid())
+        cabinet = Cabinet.objects.filter(name=form.data["cabinet_name"])
+        cabinet = cabinet.first()
+        # the cabinet exists
+        self.assertIsNotNone(cabinet)
+        # He has to make a affiliation demand
+        askfor_url = reverse("cabinet:askfor")
+        response = self.client.get(askfor_url)
         self.assertEqual(response.status_code, 200)
 
+        cabinet_associate = Associate.objects.filter(cabinet_id=cabinet.id).first()
+        obj, _ = RequestAssociate.objects.get_or_create(
+            sender_id=self.bob.id,
+            receiver_id=cabinet_associate.user_id,
+            cabinet_id=cabinet_associate.cabinet_id,
+        )
 
-class TestCreateCabinet(TestCase):
+        self.assertEqual(obj.receiver_id, self.bill.id)
+        self.assertEqual(obj.sender_id, self.bob.id)
+
+        # Bill has to accept and choice bitween associate or replacment
+        # he choose associate and then valid
+        self.client.force_login(self.bill)
+        self.assertTrue(self.bill.is_cabinet_owner)
+        valid_form = AssociationValidationForm(
+            data={"confirm": self.bob.id, "choice": "associate"}
+        )
+        # breakpoint()
+        self.assertTrue(valid_form.is_valid())
+
+        # Associate.objects.create(cabinet_id=cabinet.id, user_id=self.bob.id)
+
+
+class TestCreateCabinetForm(TestCase):
     """Test Create Cabinet form."""
 
     def setUp(self):
@@ -120,34 +156,39 @@ class TestCreateCabinet(TestCase):
         if associate:
             associate.get_associates(associate.id)
             cabinet_id = associate.cabinet_id
+            # breakpoint()
             self.cabinet = Cabinet.objects.filter(pk=cabinet_id).first()
+        self.bob = User.objects.create_user(
+            username="bob", email="bob@bebo.com", password="poufpouf"
+        )
 
     def test_create_cabinet_placeholder(self):
         """Test create cabinet placeholder."""
-        form = CreateCabinet()
+        form = CreateCabinetForm()
         self.assertIn('placeholder="Votre nouveau cabinet"', form.as_ul())
 
     def test_create_cabinet_form_returns_expected_value(self):
         """Test create cabinet form returns expected value."""
-        form = CreateCabinet(data={"cabinet": "cabob"})
+        self.client.force_login(self.bob)
+        form = CreateCabinetForm(data={"cabinet_name": "cabob"})
         self.assertTrue(form.is_valid())
-        self.assertEqual(form.data["cabinet"], "cabob")
+        self.assertEqual(form.data["cabinet_name"], "cabob")
 
     def test_create_cabinet_is_not_already_registered(self):
         """Test create cabinet is not already registered."""
-        cabinet = "cabob"
+        cabinet = "cabill"
         # response = self.client.post(
         #     "/auth/accounts/profile/", data={"cabinet": "cabob"}
         # )
 
-        form = CreateCabinet(data={"cabinet": "cabill"})
+        form = CreateCabinetForm(data={"cabinet_name": "cabill"})
         self.assertTrue(form.is_valid())
         # breakpoint()
         cabinet = Cabinet.objects.create(name="cabill")
         self.assertEqual(cabinet.name, "cabill")
 
 
-class TestSearchForCabinet(TestCase):
+class TestSearchCabinetForm(TestCase):
     """Test Search For Cabinet form."""
 
     def setUp(self):
@@ -176,22 +217,22 @@ class TestSearchForCabinet(TestCase):
             cabinet_id = associate.cabinet_id
             self.cabinet = Cabinet.objects.filter(pk=cabinet_id).first()
 
-    def test_search_for_cabinet_placeholder(self):
+    def test_cabinet_name_placeholder(self):
         """Test search for cabinet placeholder."""
-        form = SearchForCabinet()
+        form = SearchCabinetForm()
         self.assertIn('placeholder="nom du cabinet"', form.as_ul())
 
-    def test_search_for_cabinet_from_new_user(self):
+    def test_cabinet_name_from_new_user(self):
         """Test search for cabinet from new user."""
         cabinet = "cabill"
         # Bob search for "cabill" cabinet
-        form = SearchForCabinet(data={"search_for_cabinet": cabinet})
+        form = SearchCabinetForm(data={"cabinet_name": cabinet})
         self.assertTrue(form.is_valid())
-        cabinet = Cabinet.objects.filter(name=form.data["search_for_cabinet"])
+        cabinet = Cabinet.objects.filter(name=form.data["cabinet_name"])
         cabinet = cabinet.first()
         # the cabinet exists
         self.assertIsNotNone(cabinet)
-        # He have to make a affiliation demand
+        # He has to make a affiliation demand
         askfor_url = reverse("cabinet:askfor")
         response = self.client.get(askfor_url)
         self.assertEqual(response.status_code, 302)
@@ -207,7 +248,7 @@ class TestSearchForCabinet(TestCase):
         self.assertEqual(obj.sender_id, self.bob.id)
 
 
-class TestAssociationValidation(TestCase):
+class TestAssociationValidationForm(TestCase):
     """Test Association Validation form."""
 
     def setUp(self):
@@ -215,7 +256,7 @@ class TestAssociationValidation(TestCase):
 
     def test_association_validation_form_class_contains_expected_values(self):
         """Test_association_validtation_class_contains_expected_values."""
-        form = AssociationValidation()
+        form = AssociationValidationForm()
         self.assertIn('class="form-control me-2"', form.as_ul())
 
 

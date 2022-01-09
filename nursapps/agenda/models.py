@@ -41,7 +41,7 @@ class Event(models.Model):
 
     events = models.ForeignKey(
         to=Events,
-        default=lambda: Events.objects.create(),
+        null=True,
         on_delete=models.CASCADE,
     )
     total_visit_per_day = models.IntegerField(default=1)

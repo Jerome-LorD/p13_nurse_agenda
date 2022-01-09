@@ -7,7 +7,7 @@ from django.conf import settings
 class Cabinet(models.Model):
     """Cabinet assoc model."""
 
-    name = models.CharField(max_length=240, unique=True, default=False, blank=True)
+    name = models.CharField(max_length=10, unique=True, default=False, blank=True)
 
     def __str__(self) -> str:
         """Str representation."""
@@ -22,15 +22,15 @@ class Cabinet(models.Model):
 class AssociateManager(models.Manager):
     """Associate manager."""
 
-    def get_associates(self, cabinet_id):
+    def get_associates(self, cabinet):
         """Get associates."""
-        associate = self.all().filter(cabinet_id=cabinet_id)
-        associates = User.objects.filter(id__in=[i.user_id for i in associate])
+        associates = self.all().filter(cabinet=cabinet)
+        associates = User.objects.filter(pk__in=[asso.user_id for asso in associates])
         return associates
 
 
 class Associate(models.Model):
-    """Stores the user and the company they are affiliated with."""
+    """Stores the user and the cabinet they are affiliated with."""
 
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     cabinet = models.ForeignKey(Cabinet, on_delete=models.CASCADE)
@@ -45,6 +45,6 @@ class Associate(models.Model):
 class RequestAssociate(models.Model):
     """Request to associate the new user with the owner of the cabinet."""
 
-    sender_id = models.CharField(max_length=10, default=False, blank=True)
-    receiver_id = models.CharField(max_length=10, default=False, blank=True)
-    cabinet_id = models.CharField(max_length=10, default=False, blank=True)
+    sender_id = models.IntegerField(blank=True, null=True)
+    receiver_id = models.IntegerField(blank=True, null=True)
+    cabinet_id = models.IntegerField(blank=True, null=True)

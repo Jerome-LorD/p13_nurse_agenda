@@ -4,14 +4,14 @@ from django.contrib.auth import forms as auth_forms
 from django.contrib.auth import get_user_model
 
 # from django.core.exceptions import ValidationError
-from nursapps.cabinet.models import Cabinet
+from nursapps.cabinet.models import Cabinet, RequestAssociate
 
 
-class CreateCabinet(forms.Form):  # CreateCabinetForm
+class CreateCabinetForm(forms.Form):  # CreateCabinetForm
     """New cabinet form."""
 
-    cabinet = forms.CharField(
-        max_length=240,
+    cabinet_name = forms.CharField(
+        max_length=10,
         widget=forms.TextInput(
             attrs={
                 "class": "form-control form-control-user",
@@ -19,37 +19,46 @@ class CreateCabinet(forms.Form):  # CreateCabinetForm
                 "id": "newcabinet",
             }
         ),
+        label="Nom de votre cabinet",
     )
 
     class Meta:
         """NewCabForm meta class."""
 
         model = Cabinet
-        fields = "cabinet"
+        fields = "cabinet_name"
 
 
-class SearchForCabinet(forms.Form):
+class SearchCabinetForm(forms.Form):
     """New ask form."""
 
-    search_for_cabinet = forms.CharField(
-        max_length=140,
+    cabinet_name = forms.CharField(
+        max_length=10,
         widget=forms.TextInput(
             attrs={
-                "class": "form-control col-md-2",
+                "class": "form-control col-md-5",
                 "placeholder": "nom du cabinet",
             }
         ),
+        label="Demande d'association",
     )
 
     class Meta:
-        """NewAskForm meta class."""
+        """SearchCabinet meta class."""
 
         model = Cabinet
-        fields = "search_for_cabinet"
+        fields = "cabinet_name"
+
+    def clean_cabinet_name(self):
+        """Clean_cabinet_name."""
+        cabinet_name = self.cleaned_data["cabinet_name"]
+        if not cabinet_name:
+            raise forms.ValidationError("Une erreur.")
+        return cabinet_name
 
 
-class AssociationValidation(forms.Form):
-    """New valid form."""
+class AssociationValidationForm(forms.Form):
+    """Association validation form."""
 
     CHOICES = [("associate", "Associé(e)"), ("replacment", "Remplacant(e)")]
 
@@ -65,14 +74,46 @@ class AssociationValidation(forms.Form):
     )
     choice = forms.ChoiceField(widget=forms.RadioSelect, choices=CHOICES)
 
-    def clean(self):
+
+class DeclineAssociationForm(forms.Form):
+    """Decline association form."""
+
+    decline = forms.CharField(
+        label="",
+        max_length=10,
+        widget=forms.HiddenInput(
+            attrs={
+                "class": "form-control me-2",
+                "id": "decline",
+            }
+        ),
+    )
+
+    def clean_decline(self):
+        """Clean decline."""
+        decline = self.cleaned_data["decline"]
+        if not decline:
+            raise forms.ValidationError("Une erreur.")
+        return decline
+
+
+class CancelAssociationForm(forms.Form):
+    """Cancel association form."""
+
+    cancel = forms.CharField(
+        label="",
+        max_length=10,
+        widget=forms.HiddenInput(
+            attrs={
+                "class": "form-control me-2",
+                "id": "cancel",
+            }
+        ),
+    )
+
+    def clean_cancel(self):
         """Clean confirm."""
-        confirm = self.cleaned_data["confirm"]
-        if not confirm:
-            raise forms.ValidationError("Il faut confirmer pour valider.")
-
-    class Meta:
-        """NewAskForm meta class."""
-
-        model = Cabinet
-        fields = ("confirm", "choice")
+        cancel = self.cleaned_data["cancel"]
+        if not cancel:
+            raise forms.ValidationError("Une erreur.")
+        return cancel

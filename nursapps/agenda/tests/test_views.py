@@ -133,16 +133,31 @@ class TestAgendaViews(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "pages/daily_agenda_details.html")
 
-    def test_view_redirect_to_profile_if_user_not_cabinet_owner(self):
-        """Test view redirect to profile if user not cabinet owner."""
+    def test_view_redirect_to_create_new_cabinet_if_user_not_cabinet_owner(self):
+        """Test view redirect to create new cabinet if user not cabinet owner."""
         self.client.force_login(self.bob)
         self.assertFalse(self.bob.is_cabinet_owner)
 
         # Bob tries to use the app
         response = self.client.get("/agenda/2022/01/10/")
-        self.assertRedirects(response, "/auth/accounts/profile/")
+        # and the targeted link redirect to profile
+        self.assertRedirects(
+            response,
+            "/auth/accounts/profile/",
+            status_code=302,
+            target_status_code=302,
+        )
+        response = self.client.get("/auth/accounts/profile/")
+        # and profile redirects to new_cabinet
+        self.assertRedirects(
+            response,
+            "/accounts/profile/new-cabinet/",
+            status_code=302,
+            target_status_code=200,
+        )
 
     def test_view_error_404(self):
         """Test view error_404 return expected status code."""
         response = self.client.get("/agenda/blablablibli/")
         self.assertEqual(response.status_code, 404)
+        self.assertTemplateUsed(response, "pages/404.html")

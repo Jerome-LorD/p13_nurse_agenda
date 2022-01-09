@@ -5,7 +5,7 @@ import calendar
 
 from django.contrib.auth.models import User
 from django.http.response import HttpResponseRedirect
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from nursapps.agenda.forms import EditEventForm, FormEvent
@@ -368,29 +368,20 @@ def edit_event(request, year, month, day, hour, event_id):
                 )
             )
         else:
-            already = event.update_events(group_event, edit_choice)
-            if not already:
-                return HttpResponseRedirect(
-                    reverse(
-                        "nurse:daily_agenda",
-                        kwargs={"year": year, "month": month, "day": day},
-                    )
+            # request.session["already_took"] = True
+            # request.session["booked_time"] = f"{hour_}:{minute_}"
+            return HttpResponseRedirect(
+                reverse(
+                    "nurse:edit_event",
+                    kwargs={
+                        "year": year,
+                        "month": month,
+                        "day": day,
+                        "hour": hour,
+                        "event_id": event_id,
+                    },
                 )
-            else:
-                # request.session["already_took"] = True
-                # request.session["booked_time"] = f"{hour_}:{minute_}"
-                return HttpResponseRedirect(
-                    reverse(
-                        "nurse:edit_event",
-                        kwargs={
-                            "year": year,
-                            "month": month,
-                            "day": day,
-                            "hour": hour,
-                            "event_id": event_id,
-                        },
-                    )
-                )
+            )
     return render(
         request,
         "pages/event.html",

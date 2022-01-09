@@ -26,20 +26,30 @@
                     </div>
                 </div>
             </div>
-            <p> {% lorem 1 b random %} </p>
-            Le cabinet <b>{{cabinet|capfirst}}</b> est déjà enregistré, 
-            <ul>
-                <li>vous pouvez le sélectionner et faire la demande d'association de votre compte à son propriétaire.</li>
 
+            <h3>Le cabinet {{cabinet_name}} est déjà enregistré</h3>
+
+            {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+
+
+            <p>vous pouvez le sélectionner et faire la demande d'association de votre compte à son propriétaire.</p>
+            <ul>
                 <form method="post" class="user" action="{% url 'cabinet:askfor' %}">
                     {% csrf_token %}
                     {{ form.as_ul }}
                     <br><br><br>
-                    <input type="submit" class="btn btn-primary col-md-2" value="Envoyer la demande">
+                    <input type="submit" class="left btn btn-primary col-md-5 mr-2 mb-1" value="Envoyer la demande">
+                    <a class="left btn btn-light" href="{% url 'nursauth:profile' %}"> Annuler </a>
                 </form>    
-
-                <li>Vous pouvez créer un autre cabinet. Retour sur profile -> L'intitulé de ce cabinet doit être unique (ne pas être déjà enregistré).</li>
             </ul>
+            <span class="askfor">Annulez pour créer un autre cabinet. L'intitulé de ce cabinet doit être unique (ne pas être déjà enregistré).</span>
         </div>
     </div>
 </div>

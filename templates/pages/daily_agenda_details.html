@@ -30,7 +30,7 @@
 						{% for event in appointments_per_day %} 
 							{% if request.user.id in associates and event.date|time:'H:i' == hour|time:'H:i' %} 
 								{{event.name}} 
-								<br><b>Adresse C</b> : 
+								<br><b>Adresse</b> : 
 								{{event.care_address}} 
 							{% endif %}
 						{% endfor %} 
