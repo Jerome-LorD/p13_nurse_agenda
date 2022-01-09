@@ -16,7 +16,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+handler400 = "nursapps.agenda.views.error_400"
 handler404 = "nursapps.agenda.views.error_404"
+handler500 = "nursapps.agenda.views.error_500"
 
 urlpatterns = [
     path("admin/", admin.site.urls),

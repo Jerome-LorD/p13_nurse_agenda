@@ -32,9 +32,19 @@ from nursapps.agenda.utils import (
 )
 
 
+def error_400(request, exception):
+    """Error 400 view."""
+    return render(request, "pages/400.html", status=400)
+
+
 def error_404(request, exception):
     """Error 404 view."""
     return render(request, "pages/404.html", status=404)
+
+
+def error_500(request):
+    """Error 500 view."""
+    return render(request, "pages/500.html", status=500)
 
 
 def index(request):

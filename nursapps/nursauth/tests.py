@@ -8,28 +8,57 @@ class TestUserRegistration(TestCase):
 
     def setUp(self):
         """Set up."""
-        self.User = get_user_model()
-        self.client = Client()
+        User = get_user_model()
+        self.bill = User
         self.inscript_credentials = {
             "email": "john@doe.com",
             "username": "john",
             "password1": "poufpouf",
             "password2": "poufpouf",
         }
-        self.login_credentials = {"email": "john@doe.com", "password": "poufpouf"}
+
+        self.bill = User.objects.create_user(
+            username="bill", email="bill@bool.com", password="poufpouf"
+        )
+
+        self.client = Client()
 
     def test_user_registration(self):
         """Test form data.
 
         The view needs at least:
-        - an email
-        - a username
-        - a password 1 & 2
+        - email
+        - username
+        - password 1 & 2
 
-        If the registration is complete, the page is redirected
+        If the registration is complete, the page is redirected to the profile page if
+        the user has a cabinet otherwise it redirects to the new-cabinet page.
         """
         response = self.client.post(
             "/auth/accounts/inscript/", self.inscript_credentials
         )
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(len(self.User.objects.all()), 1)
+        response = self.client.get("/auth/accounts/profile/")
+        self.assertRedirects(
+            response,
+            "/accounts/profile/new-cabinet/",
+            status_code=302,
+            target_status_code=200,
+        )
+
+    def test_user_login(self):
+        """Test user login.
+
+        If the login succeed, it is also redirected to the profile page if the user
+        has a cabinet otherwise it redirects to the new-cabinet page.
+        """
+        response = self.client.get("/auth/accounts/login/")
+        self.client.force_login(self.bill)
+        self.assertTrue(self.bill.is_authenticated)
+        response = self.client.get("/auth/accounts/profile/")
+        self.assertRedirects(
+            response,
+            "/accounts/profile/new-cabinet/",
+            status_code=302,
+            target_status_code=200,
+        )

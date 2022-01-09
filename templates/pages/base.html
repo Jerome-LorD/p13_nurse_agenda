@@ -77,20 +77,6 @@
                 
             <hr class="sidebar-divider my-0">
             
-            {% comment %} {% if not user.is_authenticated %}
-                <li>
-                    <div class="form-group col">
-                            <a class="btn btn-success btn-sm mt-2" href="{% url 'nursauth:login' %}">Connexion</a>
-                            <a class="btn btn-success btn-sm mt-2" href="{% url 'nursauth:inscript' %}">Inscription</a>
-                    </div>
-                </li>
-                <!-- Divider -->
-                <hr class="sidebar-divider d-none d-md-block">            
-            {% endif %} {% endcomment %}
-            <!-- Divider -->
-
-
-
 
             <!-- Sidebar Toggler (Sidebar) -->
             <div class="text-center d-none d-md-inline">
@@ -166,11 +152,11 @@
                     {% block register %}{% endblock register %}
                     
                 {% endif %}
-
-
-                
+               
                     {% block home %}{% endblock home %}
+                    {% block error400 %}{% endblock error400 %}
                     {% block error404 %}{% endblock error404 %}
+                    {% block error500 %}{% endblock error500 %}
                     {% block reset %}{% endblock reset %}
                     {% block reset_done %}{% endblock reset_done %}
                     {% block reset-confirm %}{% endblock reset-confirm %}
