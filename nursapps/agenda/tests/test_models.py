@@ -411,7 +411,7 @@ class TestEvent(TestCase):
                     date=updated_dates[index],
                 )
         # the updated group is now:
-        new_group_event = Event.objects.filter(events_id=events_id)
+        new_group_event = Event.objects.filter(events_id=events_id).order_by("date")
         new_group_event = [event.date for event in new_group_event]
 
         self.assertEqual(new_group_event, updated_dates)
