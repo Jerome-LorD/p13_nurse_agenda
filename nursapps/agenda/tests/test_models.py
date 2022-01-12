@@ -350,8 +350,8 @@ class TestEvent(TestCase):
         And he just has to change the time from 6 to 7.
 
         expected results:
-        datetime.datetime(2021, 12, 26, 6, 0)
-        datetime.datetime(2021, 12, 26, 18, 0)
+        datetime.datetime(2021, 12, 26, 7, 0)
+        datetime.datetime(2021, 12, 26, 19, 0)
         """
         self.events = Events.objects.create()
         # create the event
@@ -383,7 +383,7 @@ class TestEvent(TestCase):
                 date=date + timedelta(hours=i),
             )
         # get the event:
-        group_event = Event.objects.filter(events_id=events_id)
+        group_event = Event.objects.filter(events_id=events_id).order_by("date")
 
         dates_grp_event = [
             evt.date
