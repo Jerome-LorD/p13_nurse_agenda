@@ -1,14 +1,13 @@
 """Agenda form module."""
 import datetime as dt
+from datetime import datetime
+
+from django.core.exceptions import ValidationError
 from django import forms
 from django.forms import DateInput
-from django.forms.widgets import Select
 
 from nursapps.agenda.models import Event
 from nursapps.cabinet.models import Associate
-
-from django.core.exceptions import ValidationError
-from datetime import datetime
 
 
 CARES_CHOICES = [
@@ -44,6 +43,24 @@ EVENT_CHOICES = [
     ("allevent", "Tout le groupe d'événement "),
 ]
 
+NUMBER_OF_DAY_CHOICES = [
+    (1, "1"),
+    (2, "2"),
+    (3, "3"),
+    (4, "4"),
+    (5, "5"),
+    (6, "6"),
+    (7, "7"),
+    (8, "8"),
+    (9, "9"),
+    (10, "10"),
+    (11, "11"),
+    (12, "12"),
+    (13, "13"),
+    (14, "14"),
+    (15, "15"),
+]
+
 
 class FormEvent(forms.ModelForm):
     """Form Event class."""
@@ -62,6 +79,9 @@ class FormEvent(forms.ModelForm):
             "date": DateInput(
                 attrs={
                     "type": "datetime-local",
+                    "step": 60 * 15,
+                    "max": "2030-01-01T22:45",
+                    "min": "2020-01-01T06:00",
                     "class": "form-control",
                 },
             )
@@ -162,23 +182,7 @@ class FormEvent(forms.ModelForm):
         required=False,
     )
     number_of_days = forms.ChoiceField(
-        choices=[
-            (1, "1"),
-            (2, "2"),
-            (3, "3"),
-            (4, "4"),
-            (5, "5"),
-            (6, "6"),
-            (7, "7"),
-            (8, "8"),
-            (9, "9"),
-            (10, "10"),
-            (11, "11"),
-            (12, "12"),
-            (13, "13"),
-            (14, "14"),
-            (15, "15"),
-        ],
+        choices=NUMBER_OF_DAY_CHOICES,
         widget=forms.Select(
             attrs={
                 "class": "form-control",
@@ -229,12 +233,18 @@ class FormEvent(forms.ModelForm):
             date = self.cleaned_data["date"]
 
             if (
-                (date not in [i.date for i in events])
+                (
+                    date not in [i.date for i in events]
+                    or date == datetime.strptime(self.initial["date"], "%Y-%m-%dT%H:%M")
+                )
                 and date.minute in [0, 15, 30, 45]
                 and date.hour in list(range(6, 23))
             ):
                 return date
-            raise ValidationError("Vous ne pouvez pas valider cette tranche horaire.")
+            raise ValidationError(
+                "Cette tranche horaire est probablement déjà "
+                "occupée ou en dehors du scope (06:00 - 22:45)."
+            )
 
 
 class EditEventForm(FormEvent):

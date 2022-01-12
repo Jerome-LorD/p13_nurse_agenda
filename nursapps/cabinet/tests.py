@@ -1,16 +1,16 @@
 """Test cabinet module."""
 from django.test import TestCase
 from django.contrib.auth import get_user_model
-from nursapps.cabinet.models import Associate, Cabinet, RequestAssociate
 from django.test import Client
 from django.urls import reverse
 from django.shortcuts import redirect
+
 from nursapps.cabinet.forms import (
     CreateCabinetForm,
     SearchCabinetForm,
     AssociationValidationForm,
 )
-
+from nursapps.cabinet.models import Associate, Cabinet, RequestAssociate
 
 User = get_user_model()
 

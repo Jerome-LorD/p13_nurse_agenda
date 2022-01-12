@@ -2,7 +2,6 @@
 {% load static %}
 {% block title %}IDE Agenda -- Mon compte{% endblock title %}
 
-
 {% block profile %}
 
 {% comment %} <script>
@@ -33,7 +32,7 @@
 
                     {% block cabinet_create %}{% endblock cabinet_create %}
 
-                {% elif not request.user.is_cabinet_owner and user_send_request_for_association %} {% comment %} user_send_request_for_association {% endcomment %}
+                {% elif not request.user.is_cabinet_owner and user_send_request_for_association %}
                     <p>La demande vient d'être envoyée, votre accès au planning sera déverrouillé quand elle sera acceptée.<br>
                     Vous avez accès à un unique cabinet.</p><br>
                     <form action="{% url 'cabinet:cancel_associate_demand' %}" method="post">
@@ -54,13 +53,18 @@
                     <p>Après validation de la demande par vos soins, vos associés recevront les demandes et devront valider une nouvelle association. 
                     <br>Vous pouvez choisir d'attribuer un statut "invité" ou "associé".</p>
 
-
                 {% elif associates %}
-                nombre d'accociés : {{associates|length}}
+                    {% if not request.user.is_cabinet_owner and associate_is_replacment and associates %}
+                        <h3>Ce qu'un remplaçant pourrait faire</h3>
+                        <p>Un formulaire de demande d'association vers au autre cabinet<br>
+                        Après si un remplaçant à plusieurs cabinet, comment il passe d'un cabinet à l'autre ?</p>
+                    {% endif %}
+
+                    nombre d'accociés : {{associates|length}}
                     <table class="table table-striped table-dark">
                         <thead>
                             <tr>
-                                <th style="text-align:center" colspan="2">Associés du cabinet {{ cab_name|capfirst }}</th>
+                                <th style="text-align:center" colspan="2">Associés du cabinet {{ cabinet_name|capfirst }}</th>
                             </tr>
                             <tr>
                                 <th>Nom d'utilisateur</th>

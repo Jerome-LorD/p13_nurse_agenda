@@ -1,13 +1,14 @@
 """Agenda models module."""
-from django.db import models
-from django.conf import settings
-from django.contrib.auth import get_user_model
-from django.urls import reverse
 from dateutil.rrule import WEEKLY, rrule, SU
 from dateutil.parser import *
 from datetime import datetime, timedelta
 
-from nursapps.cabinet.models import Associate
+from django.db import models
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.urls import reverse
+
+from nursapps.cabinet.models import Associate, Cabinet
 
 UserModel = get_user_model()
 
@@ -200,10 +201,10 @@ class Event(models.Model):
         dates = self.get_dates()
         for index in range(0, self.number_of_days):
             Event.objects.create(
-                # total_visit_per_day=self.total_visit_per_day,
-                # delta_visit_per_day=self.delta_visit_per_day,
-                # delta_visit_per_hour=self.delta_visit_per_hour,
-                # number_of_days=self.number_of_days,
+                total_visit_per_day=self.total_visit_per_day,
+                delta_visit_per_day=self.delta_visit_per_day,
+                delta_visit_per_hour=self.delta_visit_per_hour,
+                number_of_days=self.number_of_days,
                 name=self.name,
                 care_address=self.care_address,
                 cares=self.cares,
@@ -279,11 +280,11 @@ class Event(models.Model):
         """Create events."""
         if self.day_per_week and self.delta_visit_per_hour:
             self.create_weekly_event_with_delta_hour(user_id)
-            """2x/j++ le lun jeu et sam"""
+            """2x/d++ on mon thu & sat"""
 
         elif self.day_per_week and not self.delta_visit_per_hour:
             self.create_unique_event_per_day_with_week_recurrency(user_id)
-            """1x/jour le lun jeu et sam"""
+            """1x/day on mon thu & sat"""
         elif (
             not self.day_per_week
             and not self.delta_visit_per_hour
@@ -364,13 +365,11 @@ class Event(models.Model):
         """Get updated dates in group."""
         associate = Associate.objects.filter(user_id=self.user.id).first()
         associates = Associate.objects.get_associates(associate.cabinet_id)
-        associates = [associate.id for associate in associates]
-
         all_events = Event.objects.filter(user_id__in=associates)
 
         for index, event in enumerate(group_event):
             if self.date.hour not in [0, 1, 2, 3, 4, 5] or self.date not in [
-                i.date for i in all_events
+                event.date for event in all_events
             ]:
                 Event.objects.filter(pk=event.id).update(
                     name=self.name,
@@ -414,14 +413,14 @@ class Event(models.Model):
             self.updated_dates_in_group(group_event, updated_dates)
 
         elif edit_choice == "thisone_after":
-            """P2 - test update this one & after"""
+            """Update from the chosen date to the end."""
             self.updated_dates_in_group(group_event, updated_dates)
 
         elif edit_choice == "thisone":
             """
             update an event among a batch of events.
             eg: 2x/d & 1d/2 during three days
-            Only the date selected will be updated.
+            Only the selected date will be updated.
             """
             event = Event.objects.filter(pk=self.id)
             all_events = Event.objects.all()

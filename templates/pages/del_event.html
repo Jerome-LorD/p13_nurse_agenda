@@ -1,14 +1,13 @@
-
 {% extends 'pages/base.html' %}
 
-{% block title %}Suppression d'un rdv{% endblock %}
+{% block title %}IDE Agenda -- Suppression{% endblock %}
 
 {% block del_event %}
 
   {% if event_id is not None %}
     <div class="supp">
       <form method="post">{% csrf_token %}
-        <h4>Supprimer définitivement le rdv N°{{ event_id }} du {{now|date}} ?</h4>
+        <h4>Supprimer définitivement le rdv N°{{ event_id }} du {{day}}-{{month}}-{{year}} ?</h4>
         <p>La suppression concerne cet événement (et les événements suivant s'il fait partie d'un groupe).</p>
         
         <a href="{% url 'nurse:del_event' year month day hour_rdv event_id %}">

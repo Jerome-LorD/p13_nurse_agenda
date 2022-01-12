@@ -3,8 +3,6 @@ from django import forms
 from django.contrib.auth import forms as auth_forms
 from django.contrib.auth import get_user_model
 
-# from nursapps.agenda.models import Cabinet
-
 
 class UserCreationForm(auth_forms.UserCreationForm):
     """User creation form class."""

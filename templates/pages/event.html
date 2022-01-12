@@ -1,19 +1,11 @@
 {% extends 'pages/base.html' %}
-
 {% block title %} IDE Agenda -- {% if event_id %}Rendez-vous de {{hour_rdv}} :: Édition {% elif not event_id %}Disponibilité de {{hour_rdv}} :: Enregistrer un événement{% endif %} {% endblock title %}
-
-{% block priserdv %}
-<h3>{% if event_id %}Rendez-vous de {{hour_rdv}} :: Édition {% elif not event_id %}Disponibilité de {{hour_rdv}} :: Enregistrer un événement{% endif %}</h3>
+{% block event %}
+<h4>{% if event_id %}Rendez-vous de {{hour_rdv}} :: Édition {% elif not event_id %}Disponibilité de {{hour_rdv}} :: Enregistrer un événement{% endif %}</h4>
 	<hr class="sidebar-divider my-3">
-	{# If the user tries to modify an event in the url which belongs to another user, we prevent him and invite him to go to the previous page. #}
-	{% if request.user.id in associates or not event_id %}
+	{# If the user tries to modify an event in the url which belongs to another user from another cabinet --> go to the previous page. #}
+	{% if int_event_id in event_id_from_cabinet_events or not event_id %}
 		{% if hour_rdv in lst_hours %}
-			{% if warn == True %}
-				Attention, cette action ne sera pas enregistrée.
-			{% endif %}
-			{% if request.session.already_took and hour_rdv != booked_time %} 
-				{{ booked_time }} est déjà réservé. {{ request.session.already_took }}
-			{% endif %}
 			<form method="post" class="formrdv">
 				<fieldset style="width:50%; margin:0 auto; padding: 0 0 7em 0;">
 				{% csrf_token %}
@@ -36,9 +28,7 @@
 						<input type="submit" value="Supprimer" class="btn btn-warning">
 						</a>
 				</div>
-				
 			{% endif %}
-
 		{% else %}
 			<div style="color: #ff7171; font-size:1.1em; padding: 5px 5px;">
 			Oups ! Vous ne pouvez pas faire ce genre de modifications.<br> 
@@ -46,7 +36,7 @@
 		{% endif %}
 
 		<div class="usage">
-			<h3>Usage</h3>
+			<h4>Usage</h4>
 			<p>Après avoir saisi le nom, l'adresse puis avoir sélectionné les soins</p>
 			<ul>
 				<li>1. Sélectionnez le nombre de visites par jour au total</li>
@@ -64,10 +54,17 @@
 				entrer 7 comme delta en jour et 3 dans le nombre de jours.
 			</p>
 		</div>
-
 	{% else %} 
-		Vous n'avez pas la possibilité d'éditer cette entrée. <input type=button value="Revenir sur la page précédente" onClick="javascript:history.go(-1);">   
+		<div class="d-flex h-100 mb-4">
+			<div class="card-header py-3">
+				{% comment %} <h6 class="m-0 font-weight-bold text-primary">Development Approach</h6> {% endcomment %}
+			</div>
+			<div class="card-body">
+				<p>Vous n'avez pas la possibilité d'éditer cette entrée. <input class="btn btn-warning" type=button value="Revenir sur la page précédente" onClick="javascript:history.go(-1);"></p>
+			</div>
+		</div>
 	{% endif %}
+</div>
 
 {% endblock %}
 

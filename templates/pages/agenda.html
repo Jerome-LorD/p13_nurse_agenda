@@ -4,8 +4,8 @@
 {% block title %} IDE Agenda -- Planning de {{current_month_name}} {% endblock title %}
 
   {% block main_agenda %}
-
-  {% if not request.user.is_cabinet_owner %}
+  
+  {% if not request.user.is_cabinet_owner and not associate_is_replacment %}
   	<p>Vous devez créer un cabinet pour pouvoir utiliser l'application.
 	<br><a href=" {% url 'nursauth:profile' %} ">Rendez vous dans votre espace personnel pour créer ou vous affilier à un cabinet.</a></p>
   {% endif %}

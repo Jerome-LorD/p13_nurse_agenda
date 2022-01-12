@@ -143,7 +143,7 @@
                         {% block main_agenda %}{% endblock main_agenda %}
                         {% comment %} {% block cabinet_create %}{% endblock cabinet_create %} {% endcomment %}
                         {% block daily_agenda %}{% endblock daily_agenda %}
-                        {% block priserdv %}{% endblock priserdv %}
+                        {% block event %}{% endblock event %}
                         {% block del_event %}{% endblock del_event %}
                         <!-- /.container-fluid -->
                 {% else %}
@@ -170,7 +170,7 @@
             <footer class="sticky-footer bg-white">
                 <div class="container my-auto">
                     <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; IdeAgenda 2021</span>
+                        <span>IdeAgenda {{current_year}}</span>
                     </div>
                 </div>
             </footer>

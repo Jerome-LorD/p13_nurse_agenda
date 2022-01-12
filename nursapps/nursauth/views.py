@@ -1,5 +1,6 @@
 """Nursauth views module."""
-from django.http import HttpResponse
+from datetime import datetime
+
 from django.shortcuts import redirect, render
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import authenticate
@@ -7,19 +8,13 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http.response import HttpResponseRedirect
 from django.urls import reverse
+
+from .forms import InscriptForm, NewLoginForm
+
 from nursapps.cabinet.models import Associate, Cabinet, RequestAssociate
 from nursapps.nursauth.models import User
-from .forms import (
-    InscriptForm,
-    NewLoginForm,
-)
-from nursapps.cabinet.forms import (
-    CreateCabinetForm,
-    AssociationValidationForm,
-    # DeclineAssociationForm,
-)
+from nursapps.cabinet.forms import AssociationValidationForm
 
-from datetime import datetime
 
 now = datetime.now()
 
@@ -58,7 +53,6 @@ def login(request):
         user = authenticate(request, email=email, password=password)
         if user:
             auth_login(request, user)
-            messages.add_message(request, messages.SUCCESS, "Vous êtes connecté !")
             return HttpResponseRedirect(
                 reverse(
                     "nursauth:profile",
@@ -84,7 +78,11 @@ def login(request):
 @login_required
 def user_profile(request):
     """Account."""
-    context = {"current_month": now.month, "current_year": now.year}
+    context = {
+        "current_month": now.month,
+        "current_year": now.year,
+        "associate_is_replacment": Associate.objects.is_replacment(request.user),
+    }
     sender_request = RequestAssociate.objects.filter(sender_id=request.user.id)
     association_request = RequestAssociate.objects.filter(receiver_id=request.user.id)
     association_request = association_request.values_list("sender_id", flat=True)
@@ -98,6 +96,8 @@ def user_profile(request):
     if sender_request.exists():
         context.update(user_send_request_for_association=sender_request)
     elif Associate.objects.filter(user=request.user).exists():
+        c_name = Cabinet.objects.filter(associate__user_id=request.user.id).first().name
+        context.update(cabinet_name=c_name)
         associate = Associate.objects.get(user=request.user)
         if associate or request.user.is_cabinet_owner or sender_request or sender:
             associates = Associate.objects.get_associates(associate.cabinet.id)

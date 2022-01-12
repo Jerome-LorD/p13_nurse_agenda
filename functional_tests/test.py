@@ -1,10 +1,11 @@
 """Selenium test module."""
 import os
 
-from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.firefox.service import Service
+
+from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 
 
 class SeleniumTests(StaticLiveServerTestCase):

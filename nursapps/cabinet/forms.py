@@ -1,32 +1,36 @@
 """Cabinet forms module."""
 from django import forms
-from django.contrib.auth import forms as auth_forms
-from django.contrib.auth import get_user_model
-
-# from django.core.exceptions import ValidationError
-from nursapps.cabinet.models import Cabinet, RequestAssociate
+from django.core.exceptions import ValidationError
 
 
-class CreateCabinetForm(forms.Form):  # CreateCabinetForm
+class CreateCabinetForm(forms.Form):
     """New cabinet form."""
 
     cabinet_name = forms.CharField(
-        max_length=10,
+        max_length=16,
         widget=forms.TextInput(
             attrs={
                 "class": "form-control form-control-user",
                 "placeholder": "Votre nouveau cabinet",
                 "id": "newcabinet",
+                "name": "cabinet_name",
             }
         ),
         label="Nom de votre cabinet",
+        required=False,
     )
 
-    class Meta:
-        """NewCabForm meta class."""
-
-        model = Cabinet
-        fields = "cabinet_name"
+    def clean_cabinet_name(self):
+        """Clean cabinet name."""
+        data = self.cleaned_data["cabinet_name"]
+        if not data:
+            raise ValidationError(
+                (
+                    "Ce champ est obligatoire, merci de saisir "
+                    "un nom de cabinet à rechercher."
+                )
+            )
+        return data
 
 
 class SearchCabinetForm(forms.Form):
@@ -43,24 +47,27 @@ class SearchCabinetForm(forms.Form):
         label="Demande d'association",
     )
 
-    class Meta:
-        """SearchCabinet meta class."""
-
-        model = Cabinet
-        fields = "cabinet_name"
-
     def clean_cabinet_name(self):
-        """Clean_cabinet_name."""
-        cabinet_name = self.cleaned_data["cabinet_name"]
-        if not cabinet_name:
-            raise forms.ValidationError("Une erreur.")
-        return cabinet_name
+        """Clean cabinet name."""
+        data = self.cleaned_data["cabinet_name"]
+        if not data:
+            raise ValidationError(
+                (
+                    "Ce champ est obligatoire, merci de saisir "
+                    "un nom du cabinet avant de valider la demande."
+                )
+            )
+        return data
 
 
 class AssociationValidationForm(forms.Form):
     """Association validation form."""
 
-    CHOICES = [("associate", "Associé(e)"), ("replacment", "Remplacant(e)")]
+    CHOICES = [
+        ("associate", "Associé(e)"),
+        ("collaborator", "Collaborateur(trice)"),
+        # ("replacment", "Remplacant(e)"),
+    ]
 
     confirm = forms.CharField(
         label="",
@@ -89,13 +96,6 @@ class DeclineAssociationForm(forms.Form):
         ),
     )
 
-    def clean_decline(self):
-        """Clean decline."""
-        decline = self.cleaned_data["decline"]
-        if not decline:
-            raise forms.ValidationError("Une erreur.")
-        return decline
-
 
 class CancelAssociationForm(forms.Form):
     """Cancel association form."""
@@ -110,10 +110,3 @@ class CancelAssociationForm(forms.Form):
             }
         ),
     )
-
-    def clean_cancel(self):
-        """Clean confirm."""
-        cancel = self.cleaned_data["cancel"]
-        if not cancel:
-            raise forms.ValidationError("Une erreur.")
-        return cancel

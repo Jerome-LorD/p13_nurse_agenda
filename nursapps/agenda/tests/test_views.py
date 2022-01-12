@@ -1,12 +1,14 @@
 """Test agenda views module."""
-from django.test import TestCase
-from django.contrib.auth import get_user_model
-from nursapps.agenda.models import Event, Events
-from nursapps.cabinet.models import Associate, Cabinet
 from dateutil.parser import *
 from datetime import datetime, timedelta
+
+from django.test import TestCase
+from django.contrib.auth import get_user_model
 from django.test import Client
 from django.urls import reverse
+
+from nursapps.agenda.models import Event, Events
+from nursapps.cabinet.models import Associate, Cabinet
 
 
 User = get_user_model()

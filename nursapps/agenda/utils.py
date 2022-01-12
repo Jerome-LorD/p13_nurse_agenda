@@ -1,11 +1,14 @@
 """Agenda utils module."""
-import datetime as dt
 import calendar
+import datetime as dt
+import numpy as np
 
 from datetime import datetime, timedelta
 from calendar import HTMLCalendar
-from nursapps.agenda.models import Event
+
 from django.template.defaultfilters import pluralize
+
+from nursapps.agenda.models import Event
 from nursapps.cabinet.models import Associate
 
 
@@ -191,3 +194,11 @@ def next_day(year, month, day) -> datetime.date:
     base = dt.date(year, month, day)
     base += dt.timedelta(days=1)
     return base
+
+
+def get_daily_agenda_hours():
+    """Get daily agenda hours."""
+    hours = [str(timedelta(hours=hour))[:-3] for hour in np.arange(6, 23, 0.25)]
+    # adding a zero before single digit:
+    hours = [str(datetime.strptime(i, "%H:%M").time())[:5] for i in hours]
+    return hours

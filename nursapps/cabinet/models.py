@@ -1,7 +1,8 @@
 """Cabinet models module."""
 from django.db import models
-from nursapps.nursauth.models import User
 from django.conf import settings
+
+from nursapps.nursauth.models import User
 
 
 class Cabinet(models.Model):
@@ -28,9 +29,14 @@ class AssociateManager(models.Manager):
         associates = User.objects.filter(pk__in=[asso.user_id for asso in associates])
         return associates
 
+    def is_replacment(self, user):
+        """Verify if user is replacment."""
+        if not user.is_cabinet_owner:
+            return Associate.objects.filter(user_id=user.id).exists()
+
 
 class Associate(models.Model):
-    """Stores the user and the cabinet they are affiliated with."""
+    """Store the user and the cabinet they are affiliated with."""
 
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     cabinet = models.ForeignKey(Cabinet, on_delete=models.CASCADE)
@@ -39,7 +45,7 @@ class Associate(models.Model):
 
     def __str__(self) -> str:
         """Str representation."""
-        return f"{self.user} - {self.cabinet}"
+        return f"{self.user_id} - {self.cabinet_id}"
 
 
 class RequestAssociate(models.Model):
