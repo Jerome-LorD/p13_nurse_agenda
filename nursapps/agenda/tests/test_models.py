@@ -390,13 +390,6 @@ class TestEvent(TestCase):
             for evt in group_event
             if evt.date >= datetime(date.year, date.month, date.day)
         ]
-        group_event = sorted(
-            [
-                evt
-                for evt in group_event
-                if evt.date >= datetime(date.year, date.month, date.day)
-            ]
-        )
 
         updated_dates = Event.updated_date(
             dates_grp_event, new_day=0, new_hour=7, new_minute=0
