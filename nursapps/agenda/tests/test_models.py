@@ -397,7 +397,7 @@ class TestEvent(TestCase):
 
         associate = Associate.objects.filter(user_id=self.user.id).first()
         associates = Associate.objects.get_associates(associate.cabinet_id)
-        all_events = Event.objects.filter(user_id__in=associates)
+        all_events = Event.objects.filter(user_id__in=associates).order_by("date")
 
         for index, event in enumerate(group_event):
             if date.hour not in [0, 1, 2, 3, 4, 5] or date not in [
