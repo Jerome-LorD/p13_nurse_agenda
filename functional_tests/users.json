@@ -1,36 +1,44 @@
 [
 {
-    "model": "nursauth.user",
-    "pk": 1,
     "fields": {
-        "password": "pbkdf2_sha256$260000$nIQSpKkeF7JUducy2DcbeF$fUlKT/2FIDRbwzCYooTw7B8Cs8TK99vL78XuS0B7oAQ=",
-        "last_login": null,
-        "is_superuser": true,
-        "username": "puradmin",
-        "first_name": "",
-        "last_name": "",
-        "is_staff": true,
-        "is_active": true,
-        "date_joined": "2021-08-28T13:49:04.400Z",
+        "date_joined": "2021-12-20T16:26:23.676",
         "email": "puradmin@localhost.com",
-        "is_cabinet_owner": false
-    }
+        "first_name": "",
+        "groups": [],
+        "is_active": true,
+        "is_cabinet_owner": false,
+        "is_staff": true,
+        "is_superuser": true,
+        "last_login": null,
+        "last_name": "",
+        "password": "pbkdf2_sha256$260000$kPtI1mOiyVvDqep0oWz57G$YOz3nw1Ltc6tlqzvng44lfHxk8lTrXfQCf+p/VicYsg=",
+        "user_permissions": [],
+        "username": "puradmin"
+    },
+    "model": "nursauth.user",
+    "pk": 1
 },
 {
-    "model": "nursauth.user",
-    "pk": 2,
     "fields": {
-        "password": "pbkdf2_sha256$260000$WamsQ6n5O6LHyxP64Omd1h$3nxHraKnolv8ZNZs6XYnzGTaZq2zw+uw4FrSkPCNrcc=",
-        "last_login": "2021-08-28T13:51:36.000Z",
-        "is_superuser": false,
-        "username": "bill",
-        "first_name": "",
-        "last_name": "",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2021-08-28T13:51:33.689Z",
+        "date_joined": "2021-12-20T23:30:45.981",
         "email": "bill@bool.com",
-        "is_cabinet_owner": true
-    }
+        "first_name": "",
+        "groups": [],
+        "is_active": true,
+        "is_cabinet_owner": true,
+        "is_staff": false,
+        "is_superuser": false,
+        "last_login": "2022-01-13T23:03:39.215",
+        "last_name": "",
+        "password": "pbkdf2_sha256$260000$Y4pmat24AlIWDr4mPTWrI6$y9UZQjedcBhKTFDE9xiZ7L5CmofrnbzUdj2C/yFtukQ=",
+        "user_permissions": [],
+        "username": "bill"
+    },
+    "model": "nursauth.user",
+    "pk": 2
 }
+
+
+
+
 ]

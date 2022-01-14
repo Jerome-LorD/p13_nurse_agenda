@@ -13,6 +13,8 @@ from nursapps.cabinet.models import Associate, Cabinet
 
 User = get_user_model()
 
+now = datetime.now()
+
 
 class TestAgendaViews(TestCase):
     """Test Agenda views."""
@@ -63,6 +65,9 @@ class TestAgendaViews(TestCase):
                 events_id=events_id,
                 date=date + timedelta(days=i),
             )
+
+        hour = date.strftime("%H:%M")
+        self.hour_, self.minute_ = (int(i) for i in hour.split(":"))
 
         self.bob = User.objects.create_user(
             username="bob", email="bob@bebo.com", password="poufpouf"
@@ -158,8 +163,68 @@ class TestAgendaViews(TestCase):
             target_status_code=200,
         )
 
-    def test_view_error_404(self):
-        """Test view error_404 return expected status code."""
-        response = self.client.get("/agenda/blablablibli/")
-        self.assertEqual(response.status_code, 404)
-        self.assertTemplateUsed(response, "pages/404.html")
+    # def test_view_redirects_to_valid_url_if_day_number_gt_maximum_day_number(self):
+    #     """Test view redirects to valid url if day number greater than max day number.
+
+    #     The valid url is /agenda/current_year/current_month/current_day/
+    #     """
+    #     self.client.force_login(self.bill)
+    #     response = self.client.get(f"/agenda/2022/1/32/")
+
+    #     self.assertRedirects(
+    #         response,
+    #         f"/agenda/{now.year}/{now.month}/{now.day}/",
+    #         status_code=302,
+    #         target_status_code=200,
+    #     )
+
+    # def test_view_redirects_to_valid_url_if_day_number_number_lt_1(self):
+    #     """Test view uses correct template if day number less than 1.
+
+    #     The valid url is /agenda/current_year/current_month/current_day/
+    #     """
+    #     self.client.force_login(self.bill)
+    #     response = self.client.get(f"/agenda/2022/1/0/")
+
+    #     self.assertRedirects(
+    #         response,
+    #         f"/agenda/{now.year}/{now.month}/{now.day}/",
+    #         status_code=302,
+    #         target_status_code=200,
+    #     )
+
+    # def test_view_redirects_to_valid_url_if_month_number_gt_12(self):
+    #     """Test view redirects to valid url if month number is greater than 12.
+
+    #     The valid url is /agenda/current_year/current_month/
+    #     """
+    #     self.client.force_login(self.bill)
+    #     response = self.client.get(f"/agenda/2022/13/")
+
+    #     self.assertRedirects(
+    #         response,
+    #         f"/agenda/{now.year}/{now.month}/",
+    #         status_code=302,
+    #         target_status_code=200,
+    #     )
+
+    # def test_view_redirects_to_valid_url_if_month_number_lt_1(self):
+    #     """Test view redirects to valid url if month number less than 1.
+
+    #     The valid url is /agenda/current_year/current_month/
+    #     """
+    #     self.client.force_login(self.bill)
+    #     response = self.client.get(f"/agenda/2022/0/")
+
+    #     self.assertRedirects(
+    #         response,
+    #         f"/agenda/{now.year}/{now.month}/",
+    #         status_code=302,
+    #         target_status_code=200,
+    #     )
+
+    # def test_view_error_404(self):
+    #     """Test view error_404 return expected status code."""
+    #     response = self.client.get("/agenda/blablablibli/")
+    #     self.assertEqual(response.status_code, 404)
+    #     self.assertTemplateUsed(response, "pages/404.html")

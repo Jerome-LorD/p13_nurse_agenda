@@ -2,6 +2,7 @@
 import datetime as dt
 import numpy
 import calendar
+import locale
 
 from datetime import datetime, timedelta, date
 
@@ -34,6 +35,7 @@ from nursapps.agenda.utils import (
 )
 
 now = datetime.now()
+format_locale = locale.setlocale(locale.LC_ALL, "fr_FR.utf8")
 
 
 def error_400(request, exception):
@@ -108,6 +110,62 @@ def agenda(request, year, month):
 
 
 @login_required
+def daily_agenda(request, year, month, day):
+    """Daily agenda."""
+    if request.user.is_cabinet_owner or Associate.objects.is_replacment(request.user):
+        associate = Associate.objects.filter(user_id=request.user.id).first()
+        if associate:
+            associates = Associate.objects.get_associates(associate.cabinet_id)
+            associates = [associate.id for associate in associates]
+        if is_valid_year_month_day(year, month, day):
+            hours = [
+                str(timedelta(hours=hour))[:-3] for hour in numpy.arange(6, 23, 0.25)
+            ]
+            appointments_per_day = Event.objects.filter(
+                date__contains=dt.date(
+                    year,
+                    month,
+                    day,
+                ),
+                user_id__in=associates,
+            )
+            booked_hours = [
+                appointment.date.strftime("%H:%M")
+                for appointment in appointments_per_day
+                if request.user.id == appointment.user_id
+                or request.user.id in associates
+            ]
+        else:
+            return HttpResponseRedirect(
+                reverse(
+                    "nurse:daily_agenda",
+                    args=[str(now.year), str(now.month), str(now.day)],
+                )
+            )
+    else:
+        return redirect("nursauth:profile")
+
+    context = {
+        "year": year,
+        "month": month,
+        "day": day,
+        "hours": [datetime.strptime(i, "%H:%M").time() for i in hours],
+        "appointments_per_day": appointments_per_day,
+        "prevday": prev_day(year, month, day),
+        "nextday": next_day(year, month, day),
+        "booked_hours": booked_hours,
+        "day_name": datetime.strftime(date(year, month, day), "%A"),
+        "current_month": now.month,
+        "current_year": now.year,
+        "associates": associates,
+        "cabinet": associate.cabinet.name,
+        "associate_is_replacment": Associate.objects.is_replacment(request.user),
+    }
+
+    return render(request, "pages/daily_agenda_details.html", context)
+
+
+@login_required
 def create_events(request, year, month, day, hour, event_id=None):
     """Create_events."""
     associate = Associate.objects.filter(user_id=request.user.id).first()
@@ -173,40 +231,6 @@ def create_events(request, year, month, day, hour, event_id=None):
             "hour_rdv": hour,
             "events": [event.id for event in event_per_day],
             "int_event_id": event.id,
-            "current_month": now.month,
-            "current_year": now.year,
-        },
-    )
-
-
-def delete_event(request, year, month, day, hour, event_id):
-    """Delete event."""
-    hour_, minute_ = (int(i) for i in hour.split(":"))
-    event = get_object_or_404(Event, pk=event_id)
-    group_event = Event.objects.filter(events_id=event.events_id)
-
-    if request.method == "POST":
-        for event in group_event:
-            if event.date >= dt.datetime(
-                int(year), int(month), int(day), hour_, minute_
-            ):
-                event.delete()
-
-        return HttpResponseRedirect(
-            reverse(
-                "nurse:daily_agenda",
-                kwargs={"year": year, "month": month, "day": day},
-            )
-        )
-    return render(
-        request,
-        "pages/del_event.html",
-        {
-            "hour_rdv": str(hour),
-            "event_id": event_id,
-            "year": year,
-            "month": month,
-            "day": day,
             "current_month": now.month,
             "current_year": now.year,
         },
@@ -297,58 +321,31 @@ def edit_event(request, year, month, day, hour, event_id):
     )
 
 
-@login_required
-def daily_agenda(request, year, month, day):
-    """Daily agenda."""
-    if request.user.is_cabinet_owner or Associate.objects.is_replacment(request.user):
-        associate = Associate.objects.filter(user_id=request.user.id).first()
-        if associate:
-            associates = Associate.objects.get_associates(associate.cabinet_id)
-            associates = [associate.id for associate in associates]
-        if is_valid_year_month_day(year, month, day):
-            hours = [
-                str(timedelta(hours=hour))[:-3] for hour in numpy.arange(6, 23, 0.25)
-            ]
-            appointments_per_day = Event.objects.filter(
-                date__contains=dt.date(
-                    year,
-                    month,
-                    day,
-                ),
-                user_id__in=associates,
-            )
-            booked_hours = [
-                appointment.date.strftime("%H:%M")
-                for appointment in appointments_per_day
-                if request.user.id == appointment.user_id
-                or request.user.id in associates
-            ]
-        else:
-            breakpoint()
-            return HttpResponseRedirect(
-                reverse(
-                    "nurse:daily_agenda",
-                    args=[str(now.year), str(now.month), str(now.day)],
-                )
-            )
-    else:
-        return redirect("nursauth:profile")
+def delete_event(request, year, month, day, hour, event_id):
+    """Delete event."""
+    hour_, minute_ = (int(i) for i in hour.split(":"))
+    event = get_object_or_404(Event, pk=event_id)
+    group_event = Event.objects.filter(events_id=event.events_id)
 
-    context = {
-        "year": year,
-        "month": month,
-        "day": day,
-        "hours": [datetime.strptime(i, "%H:%M").time() for i in hours],
-        "appointments_per_day": appointments_per_day,
-        "prevday": prev_day(year, month, day),
-        "nextday": next_day(year, month, day),
-        "booked_hours": booked_hours,
-        "day_name": datetime.strftime(date(year, month, day), "%A"),
-        "current_month": now.month,
-        "current_year": now.year,
-        "associates": associates,
-        "cabinet": associate.cabinet.name,
-        "associate_is_replacment": Associate.objects.is_replacment(request.user),
-    }
+    if request.method == "POST":
+        event.delete_event(group_event, year, month, day, hour_, minute_)
 
-    return render(request, "pages/daily_agenda_details.html", context)
+        return HttpResponseRedirect(
+            reverse(
+                "nurse:daily_agenda",
+                kwargs={"year": year, "month": month, "day": day},
+            )
+        )
+    return render(
+        request,
+        "pages/del_event.html",
+        {
+            "hour_rdv": str(hour),
+            "event_id": event_id,
+            "year": year,
+            "month": month,
+            "day": day,
+            "current_month": now.month,
+            "current_year": now.year,
+        },
+    )

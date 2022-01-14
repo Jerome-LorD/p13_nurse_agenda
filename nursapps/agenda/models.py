@@ -8,7 +8,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 
-from nursapps.cabinet.models import Associate, Cabinet
+from nursapps.cabinet.models import Associate
 
 UserModel = get_user_model()
 
@@ -432,3 +432,12 @@ class Event(models.Model):
                     user_id=self.user.id,
                     date=self.date,
                 )
+
+    def delete_event(self, group_event, year, month, day, hour, minute):
+        """Delete event.
+
+        Delete all events from the selected date to the end of group.
+        """
+        for event in group_event:
+            if event.date >= datetime(int(year), int(month), int(day), hour, minute):
+                event.delete()

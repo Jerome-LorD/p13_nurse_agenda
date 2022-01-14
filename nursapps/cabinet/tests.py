@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.test import Client
 from django.urls import reverse
-from django.shortcuts import redirect
+
 
 from nursapps.cabinet.forms import (
     CreateCabinetForm,
@@ -57,15 +57,6 @@ class TestCabinetViews(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "registration/askfor.html")
 
-    def test_view_create_new_cabinet_uses_correct_template(self):
-        """Test view create new cabinet uses correct template."""
-        self.client.force_login(self.bill)
-        profile_url = reverse("nursauth:profile")
-        response = self.client.get(profile_url)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "registration/profile.html")
-
     def test_view_confirm_associate_uses_correct_template(self):
         """Test confirm associate uses correct template."""
         self.client.force_login(self.bill)
@@ -99,7 +90,7 @@ class TestCabinetViews(TestCase):
         """Test if user can use datas on shared planning.
 
         A new user who wants to see the data of a cabinet that is not his own must ask
-        its owner to become an associate (or replacement).
+        its owner to become an associate (or collaborator).
         """
         self.client.force_login(self.bob)
         self.assertFalse(self.bob.is_cabinet_owner)
@@ -128,14 +119,14 @@ class TestCabinetViews(TestCase):
         self.assertEqual(obj.receiver_id, self.bill.id)
         self.assertEqual(obj.sender_id, self.bob.id)
 
-        # Bill has to accept and choice bitween associate or replacment
+        # Bill has to accept and choice bitween associate or collaborator
         # he choose associate and then valid
         self.client.force_login(self.bill)
         self.assertTrue(self.bill.is_cabinet_owner)
         valid_form = AssociationValidationForm(
             data={"confirm": self.bob.id, "choice": "associate"}
         )
-        # breakpoint()
+
         self.assertTrue(valid_form.is_valid())
 
         # Associate.objects.create(cabinet_id=cabinet.id, user_id=self.bob.id)
@@ -156,7 +147,7 @@ class TestCreateCabinetForm(TestCase):
         if associate:
             associate.get_associates(associate.id)
             cabinet_id = associate.cabinet_id
-            # breakpoint()
+
             self.cabinet = Cabinet.objects.filter(pk=cabinet_id).first()
         self.bob = User.objects.create_user(
             username="bob", email="bob@bebo.com", password="poufpouf"
@@ -183,7 +174,7 @@ class TestCreateCabinetForm(TestCase):
 
         form = CreateCabinetForm(data={"cabinet_name": "cabill"})
         self.assertTrue(form.is_valid())
-        # breakpoint()
+
         cabinet = Cabinet.objects.create(name="cabill")
         self.assertEqual(cabinet.name, "cabill")
 

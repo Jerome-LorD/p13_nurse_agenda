@@ -35,7 +35,7 @@ class TestEvent(TestCase):
         associates = Associate.objects.get_associates(associate.cabinet_id)
         self.associates = [associate.id for associate in associates]
 
-        self.events = Events.objects.create()
+        self.setup_events = Events.objects.create()
 
         total_visit_per_day = 1
         delta_visit_per_day = 1
@@ -62,9 +62,58 @@ class TestEvent(TestCase):
                 care_address=care_address,
                 cares=cares,
                 user_id=self.user.id,
+                events_id=self.setup_events.id,
+                date=date + timedelta(days=i),
+            )
+
+    def test_an_event_is_linked_to_a_group_id(self):
+        """Test a single event is linked to a group ID.
+
+        This group is named events.id from the Events class model.
+
+        2nd test:
+        With 2 benchs of tests:
+            - a single event
+            - a group of recurency events
+
+        Can updating a single event change the other groups?
+        """
+        total_visit_per_day = 1
+        delta_visit_per_day = 1
+        delta_visit_per_hour = 0
+        number_of_days = 1
+        name = "Client n1"
+        care_address = "1 rue du chemin"
+        cares = "AB, CD, EF"
+        date = datetime(2021, 12, 31, 6, 0)
+
+        self.events = Events.objects.create()
+
+        for i in range(
+            0,
+            total_visit_per_day * delta_visit_per_day,
+            delta_visit_per_day,
+        ):
+            event = Event.objects.create(
+                total_visit_per_day=total_visit_per_day,
+                delta_visit_per_day=delta_visit_per_day,
+                delta_visit_per_hour=delta_visit_per_hour,
+                number_of_days=number_of_days,
+                name=name,
+                care_address=care_address,
+                cares=cares,
+                user_id=self.user.id,
                 events_id=self.events.id,
                 date=date + timedelta(days=i),
             )
+
+        self.assertNotEqual(self.events.id, self.setup_events.id)
+        self.assertEqual(self.events.id, event.events_id)
+        self.assertTrue(isinstance(event, Event))
+        self.assertEqual(
+            event.__str__(),
+            f"{self.user} - {name} - {care_address} - {cares} - {date} - {self.events}",
+        )
 
     def test_create_weekly_event_with_delta_hour(self):
         """Create a weekly event with delta in hour.
@@ -476,7 +525,7 @@ class TestEvent(TestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_url_leads_to_302_status_code(self):
-        """Test url leads to 3025) status code."""
+        """Test url leads to 302 status code."""
         response = self.client.get("/agenda/2022/01/10/")
         self.assertEqual(response.status_code, 302)
 
