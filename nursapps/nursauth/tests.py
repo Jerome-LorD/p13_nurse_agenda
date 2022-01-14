@@ -33,6 +33,8 @@ class TestUserRegistration(TestCase):
 
         If the registration is complete, the page is redirected to the profile page if
         the user has a cabinet otherwise it redirects to the new-cabinet page.
+
+        Expected redirect: "/accounts/profile/new-cabinet/"
         """
         response = self.client.post(
             "/auth/accounts/inscript/", self.inscript_credentials
@@ -51,6 +53,8 @@ class TestUserRegistration(TestCase):
 
         If the login succeed, it is also redirected to the profile page if the user
         has a cabinet otherwise it redirects to the new-cabinet page.
+
+        Expected redirect: "/accounts/profile/new-cabinet/"
         """
         response = self.client.get("/auth/accounts/login/")
         self.client.force_login(self.bill)

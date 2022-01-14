@@ -66,6 +66,30 @@ class TestEvent(TestCase):
                 date=date + timedelta(days=i),
             )
 
+    def test_updated_date_with_unique_day_update_hour(self):
+        """Test_updated_date."""
+        date_list = [datetime(2021, 12, 31, 6, 0)]
+        new_day, new_hour, new_minute = (31, 18, 0)
+        upd_dt = Event.updated_date(date_list, new_day, new_hour, new_minute)
+        expected = [datetime(2021, 12, 31, 18, 0)]
+        self.assertEqual(upd_dt, expected)
+
+    def test_updated_date_with_two_day_update_hours(self):
+        """Test_updated_date two days."""
+        date_list = [
+            datetime(2021, 12, 31, 6, 0),
+            datetime(2022, 1, 1, 6, 0),
+            datetime(2022, 1, 2, 6, 0),
+        ]
+        new_day, new_hour, new_minute = (31, 18, 0)
+        upd_dt = Event.updated_date(date_list, new_day, new_hour, new_minute)
+        expected = [
+            datetime(2021, 12, 31, 18, 0),
+            datetime(2022, 1, 1, 18, 0),
+            datetime(2022, 1, 2, 18, 0),
+        ]
+        self.assertEqual(upd_dt, expected)
+
     def test_an_event_is_linked_to_a_group_id(self):
         """Test a single event is linked to a group ID.
 
@@ -518,22 +542,6 @@ class TestEvent(TestCase):
             ],
             dates,
         )
-
-    def test_wrong_url_leads_to_404_status_code(self):
-        """Test wrong url leads to 404 html page."""
-        response = self.client.get("/agenda/2022/01/10/rdv/08:00/edit/262/blabla")
-        self.assertEqual(response.status_code, 404)
-
-    def test_url_leads_to_302_status_code(self):
-        """Test url leads to 302 status code."""
-        response = self.client.get("/agenda/2022/01/10/")
-        self.assertEqual(response.status_code, 302)
-
-    def test_url_leads_to_200_status_code(self):
-        """Test url leads to 200 status code."""
-        self.client.force_login(self.user)
-        response = self.client.get("/agenda/2022/1/3/")
-        self.assertEqual(response.status_code, 200)
 
     def test_get_html_url(self):
         """Test get html url."""
