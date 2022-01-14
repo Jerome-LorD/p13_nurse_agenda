@@ -54,7 +54,7 @@ class SeleniumTests(StaticLiveServerTestCase):
         self.browser.find_element_by_xpath('//button[@value="Log-in"]').click()
         page_text = self.browser.find_element_by_tag_name("body").text
         self.assertNotIn("Les champs renseignés sont invalides.", page_text)
-        self.assertNotIn("Mon compte", page_text)
+        # self.assertNotIn("Mon compte", page_text)
         WebDriverWait(self.browser, 3).until(EC.title_contains("Mon compte"))
         self.assertIn("IDE Agenda -- Mon compte", self.browser.title)
 
