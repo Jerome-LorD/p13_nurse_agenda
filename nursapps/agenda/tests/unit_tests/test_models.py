@@ -100,7 +100,7 @@ class TestEvent(TestCase):
         self.delta_visit_per_hour = 12
         self.date = datetime(2021, 12, 31, 6, 0)
         event = Event.create_unique_day_with_recurence_in_it(self, user_id=self.user.id)
-        event = Event.objects.filter(events_id=event.events_id)
+        event = Event.objects.filter(events_id=event.events_id).order_by("date")
         self.assertTrue(len([event.date for event in event]) == 2)
         self.assertEqual(
             [
