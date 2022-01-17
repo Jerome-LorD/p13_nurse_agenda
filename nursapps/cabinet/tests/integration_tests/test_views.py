@@ -1,4 +1,6 @@
 """Test cabinet views module."""
+from datetime import datetime
+
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.test import Client
@@ -9,10 +11,12 @@ from nursapps.cabinet.forms import (
     CreateCabinetForm,
     SearchCabinetForm,
     AssociationValidationForm,
+    CancelAssociationForm,
 )
 from nursapps.cabinet.models import Associate, Cabinet, RequestAssociate
 
 User = get_user_model()
+now = datetime.now()
 
 
 class TestCabinetViews(TestCase):
@@ -26,10 +30,10 @@ class TestCabinetViews(TestCase):
 
         self.client = Client()
 
-        cabinet = Cabinet.objects.create(name="cabbill")
+        self.cabinet = Cabinet.objects.create(name="cabbill")
         self.bill.is_cabinet_owner = True
         self.bill.save()
-        Associate.objects.create(cabinet_id=cabinet.id, user_id=self.bill.id)
+        Associate.objects.create(cabinet_id=self.cabinet.id, user_id=self.bill.id)
         associate = Associate.objects.filter(user_id=self.bill.id).first()
 
         associates = Associate.objects.get_associates(associate.cabinet_id)
@@ -75,58 +79,299 @@ class TestCabinetViews(TestCase):
         self.assertFalse(self.bob.is_cabinet_owner)
 
         # but he has to create a cabinet to do so
-        # and he wants his own
+        # and he wants his own named "cabob"
         self.assertTemplateUsed(response, "registration/create_cabinet.html")
         cabinet_name = "cabob"
         form = CreateCabinetForm(data={"cabinet_name": cabinet_name})
         self.assertTrue(form.is_valid())
         self.assertFalse(Cabinet.objects.filter(name=cabinet_name).exists())
-        Cabinet.objects.create(name="cabob")
+
+        response = self.client.post(
+            url, {"cabinet_name": form.cleaned_data["cabinet_name"]}, follow=True
+        )
+        self.assertTrue(Cabinet.objects.filter(name=cabinet_name).exists())
         self.bob.is_cabinet_owner = True
         self.bob.save()
+
+        self.assertRedirects(
+            response,
+            "/auth/accounts/profile/",
+            status_code=302,
+            target_status_code=200,
+        )
         self.assertTemplateUsed(response, "registration/profile.html")
 
-    def test_view_ask_for_associate_user_can_use_datas_on_shared_planning(self):
-        """Test if user can use datas on shared planning.
-
-        A new user who wants to see the data of a cabinet that is not his own must ask
-        its owner to become an associate (or collaborator).
-        """
+    def test_view_user_create_new_cabinet_redirect_to_ask_for_associate_view(self):
+        """Test view user create new cabinet."""
         self.client.force_login(self.bob)
+        url = reverse("cabinet:create")
+        response = self.client.get(url)
+        # After Bob's inscription, he wants to use the app
         self.assertFalse(self.bob.is_cabinet_owner)
 
-        # he wants to see and use the datas on bill's cabinet
-        cabinet = "cabbill"
-        # Bob search for "cabill" cabinet
-        form = SearchCabinetForm(data={"cabinet_name": cabinet})
+        # he wants to join a cabinet already registered
+        self.assertTemplateUsed(response, "registration/create_cabinet.html")
+        cabinet_name = "cabbill"
+        form = CreateCabinetForm(data={"cabinet_name": cabinet_name})
         self.assertTrue(form.is_valid())
-        cabinet = Cabinet.objects.filter(name=form.data["cabinet_name"])
-        cabinet = cabinet.first()
-        # the cabinet exists
-        self.assertIsNotNone(cabinet)
-        # He has to make a affiliation demand
-        askfor_url = reverse("cabinet:askfor")
-        response = self.client.get(askfor_url)
+        response = self.client.post(url, {"cabinet_name": cabinet_name}, follow=True)
+        self.assertTrue(Cabinet.objects.filter(name=cabinet_name).exists())
+        self.assertEqual(response.status_code, 200)
+        # the cabinet exists and he can send an affiliation request to the owner
+        response = self.client.get(reverse("cabinet:askfor"))
+
+        form = SearchCabinetForm(data={"cabinet_name": cabinet_name})
+        self.assertTrue(form.is_valid())
+
+        url = reverse("cabinet:askfor")
+        response = self.client.post(
+            url, {"cabinet_name": form.cleaned_data["cabinet_name"]}, follow=True
+        )
         self.assertEqual(response.status_code, 200)
 
-        cabinet_associate = Associate.objects.filter(cabinet_id=cabinet.id).first()
-        obj, _ = RequestAssociate.objects.get_or_create(
-            sender_id=self.bob.id,
-            receiver_id=cabinet_associate.user_id,
-            cabinet_id=cabinet_associate.cabinet_id,
+        # The request is send
+        self.assertIn(
+            "La demande vient d'être envoyée",
+            response.content.decode(encoding="utf-8", errors="strict"),
+        )
+        self.assertTemplateUsed(response, "registration/profile.html")
+
+    def test_confirm_associate(self):
+        """Test confirm associate."""
+        self.client.force_login(self.bob)
+        url = reverse("cabinet:create")
+        response = self.client.get(url)
+        # After Bob's inscription, he wants to use the app
+        self.assertFalse(self.bob.is_cabinet_owner)
+
+        # he wants to join a cabinet already registered
+        self.assertTemplateUsed(response, "registration/create_cabinet.html")
+        cabinet_name = "cabbill"
+        form = CreateCabinetForm(data={"cabinet_name": cabinet_name})
+        self.assertTrue(form.is_valid())
+        response = self.client.post(url, {"cabinet_name": cabinet_name}, follow=True)
+        self.assertTrue(Cabinet.objects.filter(name=cabinet_name).exists())
+        self.assertEqual(response.status_code, 200)
+        # the cabinet exists and he can send an affiliation request to the owner
+        response = self.client.get(reverse("cabinet:askfor"))
+
+        form = SearchCabinetForm(data={"cabinet_name": cabinet_name})
+        self.assertTrue(form.is_valid())
+
+        url = reverse("cabinet:askfor")
+        response = self.client.post(
+            url, {"cabinet_name": form.cleaned_data["cabinet_name"]}, follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+
+        # The request is send
+        self.assertIn(
+            "La demande vient d'être envoyée",
+            response.content.decode(encoding="utf-8", errors="strict"),
+        )
+        self.assertTemplateUsed(response, "registration/profile.html")
+        self.assertTrue(RequestAssociate.objects.filter(sender_id=self.bob.id).exists())
+        association_request = RequestAssociate.objects.filter(receiver_id=self.bill.id)
+        association_request = association_request.values_list("sender_id", flat=True)
+        sender_request = RequestAssociate.objects.filter(sender_id=self.bob.id)
+
+        self.client.force_login(self.bill)
+        # Bill is cabinet owner, in his profile, a request to him is waiting
+        profile_url = reverse("nursauth:profile")
+        response = self.client.get(profile_url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "registration/profile.html")
+        self.assertTrue(self.bill.is_cabinet_owner)
+
+        self.assertNotIn(
+            "<td>bob</td><td>bob@bebo.com</td><td> associé  </td>\n",
+            response.content.decode(encoding="utf-8", errors="strict"),
         )
 
-        self.assertEqual(obj.receiver_id, self.bill.id)
-        self.assertEqual(obj.sender_id, self.bob.id)
+        self.assertIn(
+            "Vous avez une demande d'association",
+            response.content.decode(encoding="utf-8", errors="strict"),
+        )
 
-        # Bill has to accept and choice bitween associate or collaborator
-        # he choose associate and then valid
-        self.client.force_login(self.bill)
-        self.assertTrue(self.bill.is_cabinet_owner)
         valid_form = AssociationValidationForm(
             data={"confirm": self.bob.id, "choice": "associate"}
         )
-
         self.assertTrue(valid_form.is_valid())
 
-        # Associate.objects.create(cabinet_id=cabinet.id, user_id=self.bob.id)
+        sender_id = valid_form.cleaned_data["confirm"]
+        choice = valid_form.cleaned_data["choice"]
+
+        url = "/accounts/profile/confirm-associate/"
+
+        response = self.client.post(
+            url,
+            {"confirm": sender_id, "choice": choice},
+            follow=True,
+        )
+
+        self.assertFalse(self.bob.is_cabinet_owner)
+
+        profile_url = reverse("nursauth:profile")
+        response = self.client.get(profile_url)
+
+        self.assertIn(
+            "<td>bob</td><td>bob@bebo.com</td><td> associé  </td>\n",
+            response.content.decode(encoding="utf-8", errors="strict"),
+        )
+
+        self.assertTemplateUsed(response, "registration/profile.html")
+        self.assertEqual(response.status_code, 200)
+
+    def test_decline_associate(self):
+        """Test decline associate."""
+        self.client.force_login(self.bob)
+        url = reverse("cabinet:create")
+        response = self.client.get(url)
+        # After Bob's inscription, he wants to use the app
+        self.assertFalse(self.bob.is_cabinet_owner)
+
+        # he wants to join a cabinet already registered
+        self.assertTemplateUsed(response, "registration/create_cabinet.html")
+        cabinet_name = "cabbill"
+        form = CreateCabinetForm(data={"cabinet_name": cabinet_name})
+        self.assertTrue(form.is_valid())
+        response = self.client.post(url, {"cabinet_name": cabinet_name}, follow=True)
+        self.assertTrue(Cabinet.objects.filter(name=cabinet_name).exists())
+        self.assertEqual(response.status_code, 200)
+        # the cabinet exists and he can send an affiliation request to the owner
+        response = self.client.get(reverse("cabinet:askfor"))
+
+        form = SearchCabinetForm(data={"cabinet_name": cabinet_name})
+        self.assertTrue(form.is_valid())
+
+        url = reverse("cabinet:askfor")
+        response = self.client.post(
+            url, {"cabinet_name": form.cleaned_data["cabinet_name"]}, follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+
+        # The request is send
+        self.assertIn(
+            "La demande vient d'être envoyée",
+            response.content.decode(encoding="utf-8", errors="strict"),
+        )
+        self.assertTemplateUsed(response, "registration/profile.html")
+        self.assertTrue(RequestAssociate.objects.filter(sender_id=self.bob.id).exists())
+        association_request = RequestAssociate.objects.filter(receiver_id=self.bill.id)
+        association_request = association_request.values_list("sender_id", flat=True)
+        sender_request = RequestAssociate.objects.filter(sender_id=self.bob.id)
+
+        self.client.force_login(self.bill)
+        # Bill is cabinet owner, in his profile, a request to him is waiting
+        profile_url = reverse("nursauth:profile")
+        response = self.client.get(profile_url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "registration/profile.html")
+        self.assertTrue(self.bill.is_cabinet_owner)
+
+        self.assertNotIn(
+            "<td>bob</td><td>bob@bebo.com</td><td> associé  </td>\n",
+            response.content.decode(encoding="utf-8", errors="strict"),
+        )
+
+        self.assertIn(
+            "Vous avez une demande d'association",
+            response.content.decode(encoding="utf-8", errors="strict"),
+        )
+        # And now Bill wants to decline the demand
+        cancel_form = CancelAssociationForm(data={"cancel": "canceled"})
+        self.assertTrue(cancel_form.is_valid())
+        url = "/accounts/profile/decline-associate/"
+        response = self.client.post(url, {"decline": self.bob.id}, follow=True)
+
+        self.assertFalse(
+            RequestAssociate.objects.filter(sender_id=self.bob.id).exists()
+        )
+
+        self.assertTemplateUsed(response, "registration/profile.html")
+        self.assertEqual(response.status_code, 200)
+
+    def test_cancel_associate_demand(self):
+        """Test cancel associate demand."""
+        self.client.force_login(self.bob)
+        url = reverse("cabinet:create")
+        response = self.client.get(url)
+        # After Bob's inscription, he wants to use the app
+        self.assertFalse(self.bob.is_cabinet_owner)
+
+        # he wants to join a cabinet already registered
+        self.assertTemplateUsed(response, "registration/create_cabinet.html")
+        cabinet_name = "cabbill"
+        form = CreateCabinetForm(data={"cabinet_name": cabinet_name})
+        self.assertTrue(form.is_valid())
+        response = self.client.post(url, {"cabinet_name": cabinet_name}, follow=True)
+        self.assertTrue(Cabinet.objects.filter(name=cabinet_name).exists())
+        self.assertEqual(response.status_code, 200)
+        # the cabinet exists and he can send an affiliation request to the owner
+
+        self.assertRedirects(
+            response,
+            "/accounts/profile/ask-for-associate/",
+            status_code=302,
+            target_status_code=200,
+        )
+
+        form = SearchCabinetForm(data={"cabinet_name": cabinet_name})
+        self.assertTrue(form.is_valid())
+
+        url = reverse("cabinet:askfor")
+        response = self.client.post(
+            url, {"cabinet_name": form.cleaned_data["cabinet_name"]}, follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+
+        # The request is send
+        self.assertIn(
+            "La demande vient d'être envoyée",
+            response.content.decode(encoding="utf-8", errors="strict"),
+        )
+        self.assertTemplateUsed(response, "registration/profile.html")
+
+        associate = Associate.objects.get(user_id=self.bill.id)
+        if associate:
+            associates = Associate.objects.get_associates(associate.id)
+            cabinet = Cabinet.objects.filter(pk=associate.cabinet_id).first()
+
+        cabinet_associate = Associate.objects.filter(cabinet_id=cabinet.id).first()
+
+        obj, _ = RequestAssociate.objects.get_or_create(
+            sender_id=self.bob.id,
+            receiver_id=cabinet_associate.user.id,
+            cabinet_id=cabinet_associate.cabinet.id,
+        )
+        self.assertTrue(RequestAssociate.objects.filter(sender_id=self.bob.id).exists())
+
+        # And now Bob wants to cancel his demand
+        cancel_form = CancelAssociationForm(data={"cancel": "canceled"})
+        self.assertTrue(cancel_form.is_valid())
+        url = "/accounts/profile/cancel-associate-demand/"
+        response = self.client.post(url, {"cancel": "canceled"}, follow=True)
+
+        self.assertFalse(
+            RequestAssociate.objects.filter(sender_id=self.bob.id).exists()
+        )
+
+        self.assertRedirects(
+            response,
+            "/accounts/profile/new-cabinet/",
+            status_code=302,
+            target_status_code=200,
+        )
+
+        self.assertEqual(response.context["current_month"], now.month)
+        self.assertEqual(response.context["current_year"], now.year)
+
+        self.assertIn(
+            "Création ou affiliation à un cabinet",
+            response.content.decode(encoding="utf-8", errors="strict"),
+        )
+
+        self.assertTemplateUsed(response, "registration/profile.html")
+        self.assertEqual(response.status_code, 200)

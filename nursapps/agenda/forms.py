@@ -204,13 +204,13 @@ class FormEvent(forms.ModelForm):
         choices=DAYS_CHOICES,
     )
 
-    def clean_cares(self):
+    def clean_cares(self) -> str:
         """Return cleaned cares."""
         cares = self.cleaned_data["cares"]
         cares = ", ".join(cares)
         return cares
 
-    def clean_day_per_week(self):
+    def clean_day_per_week(self) -> str:
         """Return cleaned day per week."""
         day_per_week = self.cleaned_data["day_per_week"]
         day_per_week = ", ".join(day_per_week)

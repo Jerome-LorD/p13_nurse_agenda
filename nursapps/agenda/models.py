@@ -161,7 +161,7 @@ class Event(models.Model):
         self.events = Events.objects.create()
 
         for index in range(0, self.number_of_days):
-            Event.objects.create(
+            event = Event.objects.create(
                 total_visit_per_day=self.total_visit_per_day,
                 delta_visit_per_day=self.delta_visit_per_day,
                 number_of_days=self.number_of_days,
@@ -173,12 +173,13 @@ class Event(models.Model):
                 events_id=self.events.id,
                 date=dates[index],
             )
+        return event
 
     def create_unique_day_at_unique_hour(self, user_id):
         """Create an event once a day at a specific time."""
         self.events = Events.objects.create()
 
-        Event.objects.create(
+        event = Event.objects.create(
             total_visit_per_day=self.total_visit_per_day,
             delta_visit_per_day=self.delta_visit_per_day,
             delta_visit_per_hour=self.delta_visit_per_hour,
@@ -190,6 +191,7 @@ class Event(models.Model):
             events_id=self.events.id,
             date=self.date,
         )
+        return event
 
     def create_unique_day_at_unique_hour_during_several_consecutive_days(self, user_id):
         """Create unique day at unique hour during several consecutive days.
@@ -200,7 +202,7 @@ class Event(models.Model):
 
         dates = self.get_dates()
         for index in range(0, self.number_of_days):
-            Event.objects.create(
+            event = Event.objects.create(
                 total_visit_per_day=self.total_visit_per_day,
                 delta_visit_per_day=self.delta_visit_per_day,
                 delta_visit_per_hour=self.delta_visit_per_hour,
@@ -212,6 +214,7 @@ class Event(models.Model):
                 events_id=self.events.id,
                 date=dates[index],
             )
+        return event
 
     def create_unique_day_with_recurence_in_it(self, user_id):
         """Create unique day with recurence in it."""
@@ -222,7 +225,7 @@ class Event(models.Model):
             self.total_visit_per_day * self.delta_visit_per_hour,
             self.delta_visit_per_hour,
         ):
-            Event.objects.create(
+            event = Event.objects.create(
                 total_visit_per_day=self.total_visit_per_day,
                 delta_visit_per_day=self.delta_visit_per_day,
                 delta_visit_per_hour=self.delta_visit_per_hour,
@@ -234,17 +237,18 @@ class Event(models.Model):
                 events_id=self.events.id,
                 date=self.date + timedelta(hours=i),
             )
+        return event
 
     def create_unique_day_with_recurency_in_days_delta(self, user_id):
         """Create consecutive days with recurency in the day.
 
         Eg: For example, twice a day every three days for a total of 5 days.
         """
-        dates = self.get_recurency_dates()
+        self.dates = self.get_recurency_dates()
 
         self.events = Events.objects.create()
-        for index in range(0, len(dates)):
-            Event.objects.create(
+        for index in range(0, len(self.dates)):
+            event = Event.objects.create(
                 total_visit_per_day=self.total_visit_per_day,
                 delta_visit_per_day=self.delta_visit_per_day,
                 delta_visit_per_hour=self.delta_visit_per_hour,
@@ -254,8 +258,9 @@ class Event(models.Model):
                 cares=self.cares,
                 user_id=user_id,
                 events_id=self.events.id,
-                date=dates[index],
+                date=self.dates[index],
             )
+        return event
 
     def create_several_times_a_day_for_several_days(self, user_id):
         """Create several times a day for several days."""
@@ -378,6 +383,7 @@ class Event(models.Model):
                     user_id=self.user.id,
                     date=updated_dates[index],
                 )
+        return updated_dates
 
     def update_events(self, group_event, edit_choice):
         """Update events."""

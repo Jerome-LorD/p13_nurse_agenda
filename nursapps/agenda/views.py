@@ -261,7 +261,7 @@ def edit_event(request, year, month, day, hour, event_id):
     cabinet_events = Event.objects.filter(
         user__associate__cabinet_id=associate.cabinet_id
     )
-    # This group can be a single event or a recurency event
+    # This group can be a single or a recurency event
     group_event = Event.objects.filter(events_id=event.events_id)
     hour_, minute_ = (int(i) for i in hour.split(":"))
 

@@ -8,6 +8,7 @@ from django.test import Client
 from django.urls import reverse
 
 from nursapps.agenda.models import Event, Events
+from nursapps.agenda.forms import EditEventForm
 from nursapps.cabinet.models import Associate, Cabinet
 
 
@@ -124,6 +125,37 @@ class TestAgendaViews(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "pages/event.html")
+        self.assertEqual(response.status_code, 200)
+
+    def test_view_delete_event(self):
+        """Test view delete event."""
+        self.client.force_login(self.bill)
+        event_id = self.event.id
+        response = self.client.get(
+            reverse(
+                "nurse:del_event",
+                args=["2021", "12", "31", "06:00", event_id],
+            )
+        )
+
+        hour_, minute_ = (int(i) for i in "06:00".split(":"))
+        event = Event.objects.filter(pk=event_id).first()
+
+        url = f"/agenda/2021/12/31/rdv/06:00/edit/{event_id}/del_event/"
+
+        response = self.client.post(url, {"value": "Oui"}, follow=True)
+
+        group_event = Event.objects.filter(events_id=event.events_id)
+        event.delete_event(group_event, "2021", "12", "31", hour_, minute_)
+        self.assertFalse(Event.objects.filter(events_id=event.events_id).exists())
+        self.assertRedirects(
+            response,
+            reverse(
+                "nurse:daily_agenda",
+                kwargs={"year": "2021", "month": "12", "day": "31"},
+            ),
+        )
+        self.assertEqual(response.status_code, 200)
 
     def test_view_daily_agenda_uses_correct_template(self):
         """Test view daily agenda uses correct template."""

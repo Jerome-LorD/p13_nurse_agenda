@@ -1,12 +1,13 @@
 """Test agenda forms module."""
 from dateutil.parser import *
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.test import Client
 
 from nursapps.agenda.forms import FormEvent, CARES_CHOICES
+from nursapps.agenda.models import Event, Events
 from nursapps.cabinet.models import Associate, Cabinet
 
 
@@ -32,6 +33,39 @@ class TestFormEvent(TestCase):
 
         associates = Associate.objects.get_associates(associate.cabinet_id)
         self.associates = [associate.id for associate in associates]
+
+        self.setup_events = Events.objects.create()
+
+        total_visit_per_day = 1
+        delta_visit_per_day = 1
+        delta_visit_per_hour = 0
+        self.day_per_week = "0, 2, 4"  # on monday, wednesday & friday
+        number_of_days = 1
+        name = "Client n1"
+        care_address = "1 rue du chemin"
+        cares = "AB, CD, EF"
+        date = datetime(2021, 12, 31, 6, 0)
+
+        self.event = Event()
+
+        for i in range(
+            0,
+            total_visit_per_day * delta_visit_per_day,
+            delta_visit_per_day,
+        ):
+            self.event = Event.objects.create(
+                total_visit_per_day=total_visit_per_day,
+                delta_visit_per_day=delta_visit_per_day,
+                delta_visit_per_hour=delta_visit_per_hour,
+                day_per_week=self.day_per_week,
+                number_of_days=number_of_days,
+                name=name,
+                care_address=care_address,
+                cares=cares,
+                user_id=self.user.id,
+                events_id=self.setup_events.id,
+                date=date + timedelta(days=i),
+            )
 
     def test_form_event_name_field_placeholder(self):
         """Test form event name field placeholder."""
@@ -93,39 +127,4 @@ class TestFormEvent(TestCase):
         self.assertTrue(
             form.fields["number_of_days"].label == None
             or form.fields["number_of_days"].label == "Nombre total de jours"
-        )
-
-    def test_form_event_date_false(self):
-        """Test form event date false."""
-        now = datetime.now()
-        form = FormEvent(initial={"date": now})
-        self.assertFalse(form.is_valid())
-
-    def test_form_event_expected_date(self):
-        """Test form event expected date."""
-        self.client.force_login(self.user)
-
-        response = self.client.get("/agenda/2022/1/3/rdv/06:00/new/")
-
-        year, month, day, hour_minute = (
-            int(response.context["year"]),
-            int(response.context["month"]),
-            int(response.context["day"]),
-            response.context["hour_rdv"],
-        )
-
-        hour = int(hour_minute[:2])
-        minute = int(hour_minute[-2:])
-
-        form = FormEvent(
-            initial={
-                "date": datetime(year, month, day, hour, minute).strftime(
-                    "%Y-%m-%dT%H:%M"
-                )
-            }
-        )
-
-        self.assertEqual(
-            form.initial["date"],
-            f"{year}-{month:02d}-{day:02d}T{hour:02d}:{minute:02d}",
         )
